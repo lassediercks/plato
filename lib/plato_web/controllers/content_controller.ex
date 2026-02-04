@@ -2,10 +2,10 @@ defmodule PlatoWeb.ContentController do
   use Phoenix.Controller, formats: [:html]
 
   def index(conn, _params) do
-    schemas = Plato.Repo.all(Plato.Schema)
+    schemas = repo(conn).all(Plato.Schema)
     contents =
-      Plato.Repo.all(Plato.Content)
-      |> Plato.Repo.preload(:schema)
+      repo(conn).all(Plato.Content)
+      |> repo(conn).preload(:schema)
 
     # Get count of content instances per schema
     content_counts =
@@ -18,26 +18,26 @@ defmodule PlatoWeb.ContentController do
   end
 
   def new(conn, %{"schema_id" => schema_id}) do
-    case Plato.Repo.get(Plato.Schema, schema_id) do
+    case repo(conn).get(Plato.Schema, schema_id) do
       nil ->
         conn
         |> put_flash(:error, "Schema not found")
         |> redirect(to: "/content")
 
       schema ->
-        schema = Plato.Repo.preload(schema, [fields: :referenced_schema])
-        all_contents = Plato.Repo.all(Plato.Content) |> Plato.Repo.preload(:schema)
+        schema = repo(conn).preload(schema, [fields: :referenced_schema])
+        all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
         render(conn, :new, schema: schema, all_contents: all_contents)
     end
   end
 
   def create(conn, %{"schema_id" => schema_id, "content" => content_params}) do
-    schema = Plato.Repo.get(Plato.Schema, schema_id)
+    schema = repo(conn).get(Plato.Schema, schema_id)
 
     # Check if schema is unique and already has content
     if schema && schema.unique do
       existing_content =
-        Plato.Repo.get_by(Plato.Content, schema_id: schema_id)
+        repo(conn).get_by(Plato.Content, schema_id: schema_id)
 
       if existing_content do
         conn
@@ -65,7 +65,7 @@ defmodule PlatoWeb.ContentController do
       field_values: field_values
     }
 
-    case Plato.Content.create(attrs) do
+    case Plato.Content.create(attrs, repo(conn)) do
       {:ok, _content} ->
         conn
         |> put_flash(:info, "Content created successfully!")
@@ -79,35 +79,35 @@ defmodule PlatoWeb.ContentController do
   end
 
   def show(conn, %{"id" => id}) do
-    case Plato.Repo.get(Plato.Content, id) do
+    case repo(conn).get(Plato.Content, id) do
       nil ->
         conn
         |> put_flash(:error, "Content not found")
         |> redirect(to: "/content")
 
       content ->
-        content = Plato.Repo.preload(content, [schema: [fields: :referenced_schema]])
-        all_contents = Plato.Repo.all(Plato.Content) |> Plato.Repo.preload(:schema)
+        content = repo(conn).preload(content, [schema: [fields: :referenced_schema]])
+        all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
         render(conn, :show, content: content, all_contents: all_contents)
     end
   end
 
   def edit(conn, %{"id" => id}) do
-    case Plato.Repo.get(Plato.Content, id) do
+    case repo(conn).get(Plato.Content, id) do
       nil ->
         conn
         |> put_flash(:error, "Content not found")
         |> redirect(to: "/content")
 
       content ->
-        content = Plato.Repo.preload(content, [schema: [fields: :referenced_schema]])
-        all_contents = Plato.Repo.all(Plato.Content) |> Plato.Repo.preload(:schema)
+        content = repo(conn).preload(content, [schema: [fields: :referenced_schema]])
+        all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
         render(conn, :edit, content: content, all_contents: all_contents)
     end
   end
 
   def update(conn, %{"id" => id, "content" => content_params}) do
-    case Plato.Repo.get(Plato.Content, id) do
+    case repo(conn).get(Plato.Content, id) do
       nil ->
         conn
         |> put_flash(:error, "Content not found")
@@ -123,7 +123,7 @@ defmodule PlatoWeb.ContentController do
 
         attrs = %{field_values: field_values}
 
-        case content |> Plato.Content.changeset(attrs) |> Plato.Repo.update() do
+        case content |> Plato.Content.changeset(attrs) |> repo(conn).update() do
           {:ok, updated_content} ->
             conn
             |> put_flash(:info, "Content updated successfully!")
@@ -135,5 +135,14 @@ defmodule PlatoWeb.ContentController do
             |> redirect(to: "/content/#{id}/edit")
         end
     end
+  end
+
+  # Private helper to get repo from conn assigns
+  defp repo(conn) do
+    otp_app = conn.assigns[:plato_otp_app] || :plato
+
+    otp_app
+    |> Application.get_env(:plato, [])
+    |> Keyword.get(:repo, Plato.Repo)
   end
 end

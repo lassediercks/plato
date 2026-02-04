@@ -8,7 +8,7 @@ defmodule PlatoWeb.FieldController do
       |> Map.put("schema_id", schema_id)
       |> normalize_field_params()
 
-    case Plato.Field.create(attrs) do
+    case Plato.Field.create(attrs, repo(conn)) do
       {:ok, field} ->
         conn
         |> put_flash(:info, "Field '#{field.name}' added successfully!")
@@ -32,17 +32,17 @@ defmodule PlatoWeb.FieldController do
   defp normalize_field_params(params), do: params
 
   def delete_confirm(conn, %{"schema_id" => schema_id, "id" => field_id}) do
-    schema = Plato.Repo.get(Plato.Schema, schema_id)
-    field = Plato.Repo.get(Plato.Field, field_id) |> Plato.Repo.preload(:referenced_schema)
+    schema = repo(conn).get(Plato.Schema, schema_id)
+    field = repo(conn).get(Plato.Field, field_id) |> repo(conn).preload(:referenced_schema)
 
     if schema && field && field.schema_id == String.to_integer(schema_id) do
       # Get all content for this schema
       contents =
-        Plato.Repo.all(
+        repo(conn).all(
           from c in Plato.Content,
           where: c.schema_id == ^schema_id
         )
-        |> Plato.Repo.preload(:schema)
+        |> repo(conn).preload(:schema)
 
       # Find contents that have this field filled
       affected_contents =
@@ -65,12 +65,12 @@ defmodule PlatoWeb.FieldController do
   end
 
   def delete(conn, %{"schema_id" => schema_id, "id" => field_id}) do
-    field = Plato.Repo.get(Plato.Field, field_id)
+    field = repo(conn).get(Plato.Field, field_id)
 
     if field && field.schema_id == String.to_integer(schema_id) do
       # Remove field data from all content instances
       contents =
-        Plato.Repo.all(
+        repo(conn).all(
           from c in Plato.Content,
           where: c.schema_id == ^schema_id
         )
@@ -80,11 +80,11 @@ defmodule PlatoWeb.FieldController do
 
         content
         |> Plato.Content.changeset(%{field_values: updated_field_values})
-        |> Plato.Repo.update()
+        |> repo(conn).update()
       end)
 
       # Delete the field
-      Plato.Repo.delete(field)
+      repo(conn).delete(field)
 
       conn
       |> put_flash(:info, "Field '#{field.name}' deleted successfully!")
@@ -94,5 +94,14 @@ defmodule PlatoWeb.FieldController do
       |> put_flash(:error, "Field not found")
       |> redirect(to: "/schemas/#{schema_id}")
     end
+  end
+
+  # Private helper to get repo from conn assigns
+  defp repo(conn) do
+    otp_app = conn.assigns[:plato_otp_app] || :plato
+
+    otp_app
+    |> Application.get_env(:plato, [])
+    |> Keyword.get(:repo, Plato.Repo)
   end
 end

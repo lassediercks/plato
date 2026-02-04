@@ -2,7 +2,7 @@ defmodule PlatoTest do
   use ExUnit.Case
   doctest Plato
 
-  test "greets the world" do
-    assert Plato.hello() == :world
-  end
+  # Plato CMS API tests would go here
+  # For now, the main functionality is tested through integration tests
+  # in a consumer application
 end

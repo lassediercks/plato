@@ -4,10 +4,15 @@ defmodule Plato.MixProject do
   def project do
     [
       app: :plato,
-      version: "0.0.1",
+      version: "0.0.3",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      package: package(),
+      docs: docs(),
+      source_url: "https://github.com/lassediercks/plato",
+      homepage_url: "https://github.com/lassediercks/plato"
     ]
   end
 
@@ -29,7 +34,37 @@ defmodule Plato.MixProject do
       {:phoenix_live_view, "~> 1.0.1"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:plug_cowboy, "~> 2.7"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false}
+    ]
+  end
+
+  defp description do
+    """
+    A schema-driven headless CMS for Phoenix applications.
+    Create dynamic content types, manage relationships, and query content
+    with a clean API. Includes a mountable admin UI for content management.
+    """
+  end
+
+  defp package do
+    [
+      name: "plato",
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/lassediercks/plato"
+      },
+      maintainers: ["Lasse Diercks"],
+      files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE)
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: ["README.md"],
+      source_ref: "v0.0.3",
+      source_url: "https://github.com/lassediercks/plato"
     ]
   end
 end
