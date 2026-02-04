@@ -1,0 +1,39 @@
+<div class="container">
+  <h1>Create a New Schema</h1>
+
+  <form action="/" method="post">
+    <div class="form-group">
+      <label for="schema_name">
+        Schema Name:
+      </label>
+      <input
+        type="text"
+        id="schema_name"
+        name="schema[name]"
+        required
+      />
+    </div>
+
+    <button type="submit">
+      Create Schema
+    </button>
+  </form>
+
+
+
+  <div class="schemas-list">
+    <h2>Existing Schemas</h2>
+    <%= if Enum.empty?(@schemas) do %>
+      <p class="empty-state">No schemas yet. Create one above!</p>
+    <% else %>
+      <ul>
+        <%= for schema <- @schemas do %>
+          <li>
+            <span class="schema-name"><%= schema.name %></span>
+            <span class="schema-date">Created: <%= Calendar.strftime(schema.inserted_at, "%Y-%m-%d %H:%M") %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

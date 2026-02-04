@@ -11,4 +11,10 @@ config :plato, PlatoWeb.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  secret_key_base: "a_very_long_secret_key_base_for_development_purposes_only_change_in_production"
+  secret_key_base: "a_very_long_secret_key_base_for_development_purposes_only_change_in_production",
+  live_reload: [
+    patterns: [
+      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"lib/plato_web/(controllers|components)/.*(ex|heex)$"
+    ]
+  ]

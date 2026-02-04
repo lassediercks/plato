@@ -27,6 +27,7 @@ defmodule Plato.MixProject do
       {:phoenix, "~> 1.8.3"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_view, "~> 1.0.1"},
+      {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:plug_cowboy, "~> 2.7"},
       {:jason, "~> 1.4"}
     ]

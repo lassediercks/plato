@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Plato - Schema Creator</title>
+    <link rel="stylesheet" href="/css/app.css"/>
+  </head>
+  <body>
+    <%= if Phoenix.Flash.get(@flash, :info) do %>
+      <div class="flash info">
+        <%= Phoenix.Flash.get(@flash, :info) %>
+      </div>
+    <% end %>
+    <%= if Phoenix.Flash.get(@flash, :error) do %>
+      <div class="flash error">
+        <%= Phoenix.Flash.get(@flash, :error) %>
+      </div>
+    <% end %>
+    <%= @inner_content %>
+  </body>
+</html>

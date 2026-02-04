@@ -2,7 +2,8 @@ defmodule PlatoWeb.SchemaController do
   use Phoenix.Controller, formats: [:html]
 
   def index(conn, _params) do
-    render(conn, :index)
+    schemas = Plato.Repo.all(Plato.Schema)
+    render(conn, :index, schemas: schemas)
   end
 
   def create(conn, %{"schema" => %{"name" => name}}) do
