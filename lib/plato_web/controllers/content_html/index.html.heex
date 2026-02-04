@@ -9,10 +9,20 @@
       <% else %>
         <div class="schema-cards">
           <%= for schema <- @schemas do %>
-            <a href={"/content/new?schema_id=#{schema.id}"} class="schema-card">
-              <h3><%= schema.name %></h3>
-              <p>Create new <%= schema.name %></p>
-            </a>
+            <% content_count = Map.get(@content_counts, schema.id, 0) %>
+            <% can_create = !schema.unique || content_count == 0 %>
+
+            <%= if can_create do %>
+              <a href={"/content/new?schema_id=#{schema.id}"} class="schema-card">
+                <h3>
+                  <%= schema.name %>
+                  <%= if schema.unique do %>
+                    <span class="badge-small unique">unique</span>
+                  <% end %>
+                </h3>
+                <p>Create new <%= schema.name %></p>
+              </a>
+            <% end %>
           <% end %>
         </div>
       <% end %>

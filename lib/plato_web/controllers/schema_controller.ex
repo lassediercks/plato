@@ -6,8 +6,8 @@ defmodule PlatoWeb.SchemaController do
     render(conn, :index, schemas: schemas)
   end
 
-  def create(conn, %{"schema" => %{"name" => name}}) do
-    case Plato.Schema.create(%{name: name}) do
+  def create(conn, %{"schema" => schema_params}) do
+    case Plato.Schema.create(schema_params) do
       {:ok, schema} ->
         conn
         |> put_flash(:info, "Schema '#{schema.name}' created successfully!")

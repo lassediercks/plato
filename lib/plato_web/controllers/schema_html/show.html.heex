@@ -14,6 +14,17 @@
       </div>
 
       <div class="info-row">
+        <span class="label">Type:</span>
+        <span class="value">
+          <%= if @schema.unique do %>
+            <span class="badge unique">Unique (singleton)</span>
+          <% else %>
+            <span class="badge multiple">Multiple instances</span>
+          <% end %>
+        </span>
+      </div>
+
+      <div class="info-row">
         <span class="label">Created:</span>
         <span class="value"><%= Calendar.strftime(@schema.inserted_at, "%Y-%m-%d %H:%M:%S") %></span>
       </div>

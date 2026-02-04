@@ -7,7 +7,14 @@ defmodule PlatoWeb.ContentController do
       Plato.Repo.all(Plato.Content)
       |> Plato.Repo.preload(:schema)
 
-    render(conn, :index, schemas: schemas, contents: contents)
+    # Get count of content instances per schema
+    content_counts =
+      contents
+      |> Enum.group_by(& &1.schema_id)
+      |> Enum.map(fn {schema_id, contents} -> {schema_id, length(contents)} end)
+      |> Map.new()
+
+    render(conn, :index, schemas: schemas, contents: contents, content_counts: content_counts)
   end
 
   def new(conn, %{"schema_id" => schema_id}) do
@@ -25,6 +32,26 @@ defmodule PlatoWeb.ContentController do
   end
 
   def create(conn, %{"schema_id" => schema_id, "content" => content_params}) do
+    schema = Plato.Repo.get(Plato.Schema, schema_id)
+
+    # Check if schema is unique and already has content
+    if schema && schema.unique do
+      existing_content =
+        Plato.Repo.get_by(Plato.Content, schema_id: schema_id)
+
+      if existing_content do
+        conn
+        |> put_flash(:error, "This schema is unique and already has content. You can only create one instance.")
+        |> redirect(to: "/content")
+      else
+        create_content(conn, schema_id, content_params)
+      end
+    else
+      create_content(conn, schema_id, content_params)
+    end
+  end
+
+  defp create_content(conn, schema_id, content_params) do
     field_values =
       content_params
       |> Map.delete("schema_id")

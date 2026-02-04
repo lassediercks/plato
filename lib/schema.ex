@@ -5,22 +5,24 @@ defmodule Plato.Schema do
   @type t :: %__MODULE__{
           id: integer() | nil,
           name: String.t(),
+          unique: boolean(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
 
   schema "schemas" do
     field(:name, :string)
+    field(:unique, :boolean, default: false)
     has_many(:fields, Plato.Field)
     timestamps(type: :utc_datetime)
   end
 
   @doc """
-  Creates a changeset for a product.
+  Creates a changeset for a schema.
   """
-  def changeset(product, attrs) do
-    product
-    |> cast(attrs, [:name])
+  def changeset(schema, attrs) do
+    schema
+    |> cast(attrs, [:name, :unique])
     |> validate_required([:name])
   end
 
