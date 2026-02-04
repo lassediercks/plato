@@ -19,4 +19,16 @@ defmodule PlatoWeb.SchemaController do
         |> redirect(to: "/")
     end
   end
+
+  def show(conn, %{"id" => id}) do
+    case Plato.Repo.get(Plato.Schema, id) do
+      nil ->
+        conn
+        |> put_flash(:error, "Schema not found")
+        |> redirect(to: "/")
+
+      schema ->
+        render(conn, :show, schema: schema)
+    end
+  end
 end

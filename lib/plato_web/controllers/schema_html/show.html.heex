@@ -1,0 +1,31 @@
+<div class="container">
+  <div class="schema-detail">
+    <h1><%= @schema.name %></h1>
+
+    <div class="schema-info">
+      <div class="info-row">
+        <span class="label">ID:</span>
+        <span class="value"><%= @schema.id %></span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Name:</span>
+        <span class="value"><%= @schema.name %></span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Created:</span>
+        <span class="value"><%= Calendar.strftime(@schema.inserted_at, "%Y-%m-%d %H:%M:%S") %></span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Updated:</span>
+        <span class="value"><%= Calendar.strftime(@schema.updated_at, "%Y-%m-%d %H:%M:%S") %></span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a href="/" class="btn-secondary">← Back to List</a>
+    </div>
+  </div>
+</div>

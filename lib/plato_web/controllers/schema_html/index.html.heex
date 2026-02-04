@@ -29,8 +29,10 @@
       <ul>
         <%= for schema <- @schemas do %>
           <li>
-            <span class="schema-name"><%= schema.name %></span>
-            <span class="schema-date">Created: <%= Calendar.strftime(schema.inserted_at, "%Y-%m-%d %H:%M") %></span>
+            <a href={"/schemas/#{schema.id}"} class="schema-link">
+              <span class="schema-name"><%= schema.name %></span>
+              <span class="schema-date">Created: <%= Calendar.strftime(schema.inserted_at, "%Y-%m-%d %H:%M") %></span>
+            </a>
           </li>
         <% end %>
       </ul>

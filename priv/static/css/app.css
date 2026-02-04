@@ -126,3 +126,79 @@ button:hover {
   text-align: center;
   padding: 30px;
 }
+
+.schema-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s;
+}
+
+.schema-link:hover {
+  opacity: 0.8;
+}
+
+.schemas-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.schema-detail {
+  padding: 20px 0;
+}
+
+.schema-detail h1 {
+  margin-bottom: 30px;
+  color: #2c3e50;
+}
+
+.schema-info {
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.info-row {
+  display: flex;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row .label {
+  font-weight: bold;
+  color: #555;
+  width: 120px;
+}
+
+.info-row .value {
+  color: #2c3e50;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
