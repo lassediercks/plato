@@ -24,6 +24,94 @@
       </div>
     </div>
 
+    <div class="fields-section">
+      <h2>Fields</h2>
+
+      <form action={"/schemas/#{@schema.id}/fields"} method="post" class="add-field-form">
+        <div class="form-group">
+          <label for="field_type">Add:</label>
+          <select id="field_type" name="field[field_type]" required>
+            <option value="">Select type...</option>
+            <option value="text">Text Field</option>
+            <option value="reference">Schema Reference</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="text-field-group" style="display: none;">
+          <label for="field_name">Field Name:</label>
+          <input
+            type="text"
+            id="field_name"
+            name="field[name]"
+            placeholder="Field name"
+          />
+        </div>
+
+        <div class="form-group" id="reference-schema-group" style="display: none;">
+          <label for="referenced_schema_id">Select Schema:</label>
+          <select id="referenced_schema_id" name="field[referenced_schema_id]">
+            <option value="">Select a schema...</option>
+            <%= for s <- @all_schemas do %>
+              <%= if s.id != @schema.id do %>
+                <option value={s.id}><%= s.name %></option>
+              <% end %>
+            <% end %>
+          </select>
+        </div>
+
+        <button type="submit">Add</button>
+      </form>
+
+      <%= if Enum.empty?(@schema.fields) do %>
+        <p class="empty-state">No fields yet. Add one above!</p>
+      <% else %>
+        <ul class="fields-list">
+          <%= for field <- @schema.fields do %>
+            <li>
+              <%= if field.field_type == "reference" do %>
+                <span class="field-name">
+                  <span class="reference-icon">🔗</span>
+                  <%= if field.referenced_schema do %>
+                    <a href={"/schemas/#{field.referenced_schema.id}"}>
+                      <%= field.referenced_schema.name %>
+                    </a>
+                  <% else %>
+                    Unknown Schema
+                  <% end %>
+                </span>
+                <span class="field-type reference">schema</span>
+              <% else %>
+                <span class="field-name"><%= field.name %></span>
+                <span class="field-type"><%= field.field_type %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+
+    <script>
+      document.getElementById('field_type').addEventListener('change', function() {
+        const textGroup = document.getElementById('text-field-group');
+        const refGroup = document.getElementById('reference-schema-group');
+        const nameInput = document.getElementById('field_name');
+        const refSelect = document.getElementById('referenced_schema_id');
+
+        textGroup.style.display = 'none';
+        refGroup.style.display = 'none';
+        nameInput.required = false;
+        refSelect.required = false;
+
+        if (this.value === 'text') {
+          textGroup.style.display = 'block';
+          nameInput.required = true;
+        } else if (this.value === 'reference') {
+          refGroup.style.display = 'block';
+          refSelect.required = true;
+        }
+      });
+    </script>
+
     <div class="actions">
       <a href="/" class="btn-secondary">← Back to List</a>
     </div>

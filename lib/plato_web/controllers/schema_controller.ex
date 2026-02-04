@@ -28,7 +28,9 @@ defmodule PlatoWeb.SchemaController do
         |> redirect(to: "/")
 
       schema ->
-        render(conn, :show, schema: schema)
+        schema = Plato.Repo.preload(schema, [fields: :referenced_schema])
+        all_schemas = Plato.Repo.all(Plato.Schema)
+        render(conn, :show, schema: schema, all_schemas: all_schemas)
     end
   end
 end

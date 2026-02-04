@@ -11,6 +11,7 @@ defmodule Plato.Schema do
 
   schema "schemas" do
     field(:name, :string)
+    has_many(:fields, Plato.Field)
     timestamps(type: :utc_datetime)
   end
 
