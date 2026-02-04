@@ -20,8 +20,9 @@ services:
     environment:
       DATABASE_URL: "ecto://plato_psql_user:1234@db:5432/plato"
       MIX_ENV: dev
+      PORT: 4500
     ports:
-      - "4000:4000"
+      - "4500:4500"
     depends_on:
       db:
         condition: service_healthy

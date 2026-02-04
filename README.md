@@ -64,7 +64,7 @@ scope "/" do
 end
 ```
 
-Now visit `http://localhost:4000/admin/cms` to manage your content schemas.
+Now visit `/admin/cms` to manage your content schemas.
 
 ## Usage
 
@@ -205,7 +205,7 @@ Run the development environment with Docker:
 docker-compose up
 ```
 
-Visit `http://localhost:4000` to see the application.
+Visit `http://localhost:4500` to see the application.
 
 ## License
 
