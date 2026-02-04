@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: plato_psql_user
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: plato
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plato_psql_user -d plato"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: "ecto://plato_psql_user:1234@db:5432/plato"
+      MIX_ENV: dev
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - app_deps:/app/deps
+      - app_build:/app/_build
+    command: >
+      sh -c "
+        mix local.hex --force &&
+        mix local.rebar --force &&
+        mix deps.get &&
+        mix compile &&
+        mix ecto.create &&
+        mix ecto.migrate &&
+        mix phx.server
+      "
+
+volumes:
+  postgres_data:
+  app_deps:
+  app_build:

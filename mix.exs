@@ -14,6 +14,7 @@ defmodule Plato.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      mod: {Plato.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -22,10 +23,12 @@ defmodule Plato.MixProject do
   defp deps do
     [
       {:ecto_sql, "~> 3.13.4"},
-      {:phoenix, "~> 1.8.3"}
-
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:postgrex, "~> 0.19"},
+      {:phoenix, "~> 1.8.3"},
+      {:phoenix_html, "~> 4.1"},
+      {:phoenix_live_view, "~> 1.0.1"},
+      {:plug_cowboy, "~> 2.7"},
+      {:jason, "~> 1.4"}
     ]
   end
 end
