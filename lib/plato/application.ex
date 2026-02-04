@@ -5,10 +5,14 @@ defmodule Plato.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      Plato.Repo,
-      PlatoWeb.Endpoint
-    ]
+    # Only start Plato.Repo and Endpoint when running Plato standalone for development
+    # When used as a library, these should not be started
+    children =
+      if Application.get_env(:plato, :start_repo, false) do
+        [Plato.Repo, PlatoWeb.Endpoint]
+      else
+        []
+      end
 
     opts = [strategy: :one_for_one, name: Plato.Supervisor]
     Supervisor.start_link(children, opts)

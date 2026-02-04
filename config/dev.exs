@@ -3,6 +3,9 @@ import Config
 # Support DATABASE_URL for Docker, or individual config for local dev
 database_url = System.get_env("DATABASE_URL")
 
+# Start Plato.Repo when running standalone for development
+config :plato, start_repo: true
+
 config :plato, Plato.Repo, url: database_url
 config :plato, ecto_repos: [Plato.Repo]
 

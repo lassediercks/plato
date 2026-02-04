@@ -48,6 +48,8 @@ config :plato,
   default_otp_app: :my_app
 ```
 
+**Note:** Plato uses your application's repo - it does not start its own database connection. Make sure your repo is configured and started in your application's supervision tree.
+
 ## Mount Admin UI
 
 Import the Plato router and mount the admin interface in your `router.ex`:
