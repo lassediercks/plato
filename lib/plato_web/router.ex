@@ -22,5 +22,7 @@ defmodule PlatoWeb.Router do
     get "/content/new", ContentController, :new
     post "/content", ContentController, :create
     get "/content/:id", ContentController, :show
+    get "/content/:id/edit", ContentController, :edit
+    post "/content/:id/update", ContentController, :update
   end
 end

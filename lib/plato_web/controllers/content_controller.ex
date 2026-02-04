@@ -91,4 +91,49 @@ defmodule PlatoWeb.ContentController do
         render(conn, :show, content: content, all_contents: all_contents)
     end
   end
+
+  def edit(conn, %{"id" => id}) do
+    case Plato.Repo.get(Plato.Content, id) do
+      nil ->
+        conn
+        |> put_flash(:error, "Content not found")
+        |> redirect(to: "/content")
+
+      content ->
+        content = Plato.Repo.preload(content, [schema: [fields: :referenced_schema]])
+        all_contents = Plato.Repo.all(Plato.Content) |> Plato.Repo.preload(:schema)
+        render(conn, :edit, content: content, all_contents: all_contents)
+    end
+  end
+
+  def update(conn, %{"id" => id, "content" => content_params}) do
+    case Plato.Repo.get(Plato.Content, id) do
+      nil ->
+        conn
+        |> put_flash(:error, "Content not found")
+        |> redirect(to: "/content")
+
+      content ->
+        field_values =
+          content_params
+          |> Map.delete("schema_id")
+          |> Enum.reduce(%{}, fn {key, value}, acc ->
+            Map.put(acc, key, value)
+          end)
+
+        attrs = %{field_values: field_values}
+
+        case content |> Plato.Content.changeset(attrs) |> Plato.Repo.update() do
+          {:ok, updated_content} ->
+            conn
+            |> put_flash(:info, "Content updated successfully!")
+            |> redirect(to: "/content/#{updated_content.id}")
+
+          {:error, _changeset} ->
+            conn
+            |> put_flash(:error, "Failed to update content")
+            |> redirect(to: "/content/#{id}/edit")
+        end
+    end
+  end
 end
