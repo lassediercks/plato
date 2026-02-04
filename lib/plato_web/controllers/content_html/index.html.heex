@@ -1,0 +1,39 @@
+<div class="container">
+  <h1>Content</h1>
+
+  <div class="content-section">
+    <h2>Create New Content</h2>
+    <div class="schema-selector">
+      <%= if Enum.empty?(@schemas) do %>
+        <p class="empty-state">No schemas available. <a href="/">Create a schema first</a>.</p>
+      <% else %>
+        <div class="schema-cards">
+          <%= for schema <- @schemas do %>
+            <a href={"/content/new?schema_id=#{schema.id}"} class="schema-card">
+              <h3><%= schema.name %></h3>
+              <p>Create new <%= schema.name %></p>
+            </a>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="content-list-section">
+    <h2>Existing Content</h2>
+    <%= if Enum.empty?(@contents) do %>
+      <p class="empty-state">No content yet. Create some above!</p>
+    <% else %>
+      <ul class="content-list">
+        <%= for content <- @contents do %>
+          <li>
+            <a href={"/content/#{content.id}"} class="content-link">
+              <span class="content-schema"><%= content.schema.name %></span>
+              <span class="content-date">Created: <%= Calendar.strftime(content.inserted_at, "%Y-%m-%d %H:%M") %></span>
+            </a>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

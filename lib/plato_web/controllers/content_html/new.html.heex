@@ -1,0 +1,43 @@
+<div class="container">
+  <h1>Create <%= @schema.name %></h1>
+
+  <form action={"/content"} method="post" class="content-form">
+    <input type="hidden" name="schema_id" value={@schema.id} />
+
+    <%= for field <- @schema.fields do %>
+      <div class="form-group">
+        <label for={"field_#{field.id}"}><%= field.name %>:</label>
+
+        <%= if field.field_type == "text" do %>
+          <input
+            type="text"
+            id={"field_#{field.id}"}
+            name={"content[#{field.id}]"}
+            required
+          />
+        <% else %>
+          <select
+            id={"field_#{field.id}"}
+            name={"content[#{field.id}]"}
+            required
+          >
+            <option value="">Select <%= field.name %>...</option>
+            <%= for content <- @all_contents do %>
+              <%= if content.schema_id == field.referenced_schema_id do %>
+                <option value={content.id}>
+                  <%= content.schema.name %> #<%= content.id %>
+                  <%= if Map.get(content.field_values, "name"), do: " - #{Map.get(content.field_values, "name")}" %>
+                </option>
+              <% end %>
+            <% end %>
+          </select>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="actions">
+      <button type="submit">Create</button>
+      <a href="/content" class="btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

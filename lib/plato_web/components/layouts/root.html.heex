@@ -3,10 +3,20 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Plato - Schema Creator</title>
+    <title>Plato - CMS</title>
     <link rel="stylesheet" href="/css/app.css"/>
   </head>
   <body>
+    <nav class="main-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-logo">Plato</a>
+        <div class="nav-links">
+          <a href="/" class="nav-link">Schemas</a>
+          <a href="/content" class="nav-link">Content</a>
+        </div>
+      </div>
+    </nav>
+
     <%= if Phoenix.Flash.get(@flash, :info) do %>
       <div class="flash info">
         <%= Phoenix.Flash.get(@flash, :info) %>

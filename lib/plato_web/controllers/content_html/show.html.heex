@@ -1,0 +1,56 @@
+<div class="container">
+  <h1><%= @content.schema.name %> #<%= @content.id %></h1>
+
+  <div class="content-detail">
+    <div class="schema-info">
+      <div class="info-row">
+        <span class="label">Schema:</span>
+        <span class="value">
+          <a href={"/schemas/#{@content.schema.id}"}><%= @content.schema.name %></a>
+        </span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Created:</span>
+        <span class="value"><%= Calendar.strftime(@content.inserted_at, "%Y-%m-%d %H:%M:%S") %></span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Updated:</span>
+        <span class="value"><%= Calendar.strftime(@content.updated_at, "%Y-%m-%d %H:%M:%S") %></span>
+      </div>
+    </div>
+
+    <div class="field-values">
+      <h2>Field Values</h2>
+      <%= for field <- @content.schema.fields do %>
+        <div class="field-value-row">
+          <span class="field-label"><%= field.name %>:</span>
+          <span class="field-value">
+            <%= if field.field_type == "text" do %>
+              <%= Map.get(@content.field_values, to_string(field.id), "—") %>
+            <% else %>
+              <% content_id = Map.get(@content.field_values, to_string(field.id)) %>
+              <%= if content_id do %>
+                <% referenced_content = Enum.find(@all_contents, &(&1.id == String.to_integer(content_id))) %>
+                <%= if referenced_content do %>
+                  <a href={"/content/#{referenced_content.id}"}>
+                    <%= referenced_content.schema.name %> #<%= referenced_content.id %>
+                  </a>
+                <% else %>
+                  Unknown content
+                <% end %>
+              <% else %>
+                —
+              <% end %>
+            <% end %>
+          </span>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="actions">
+      <a href="/content" class="btn-secondary">← Back to Content</a>
+    </div>
+  </div>
+</div>

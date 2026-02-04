@@ -15,5 +15,10 @@ defmodule PlatoWeb.Router do
     post "/", SchemaController, :create
     get "/schemas/:id", SchemaController, :show
     post "/schemas/:schema_id/fields", FieldController, :create
+
+    get "/content", ContentController, :index
+    get "/content/new", ContentController, :new
+    post "/content", ContentController, :create
+    get "/content/:id", ContentController, :show
   end
 end
