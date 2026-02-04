@@ -4,7 +4,7 @@ defmodule Plato.MixProject do
   def project do
     [
       app: :plato,
-      version: "0.0.5",
+      version: "0.0.6",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
