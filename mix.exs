@@ -4,7 +4,7 @@ defmodule Plato.Umbrella.MixProject do
   def project do
     [
       apps_path: "apps",
-      version: "0.0.7",
+      version: "0.0.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases()
