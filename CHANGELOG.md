@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.11](https://github.com/lassediercks/plato/compare/v0.0.10...v0.0.11) (2026-02-05)
+
+
+### Bug Fixes
+
+* dont format version cols ([31d8c1f](https://github.com/lassediercks/plato/commit/31d8c1fba3da494c8adc7ed86416bd34d6a037e1))
+* next stab at release please version ([b696876](https://github.com/lassediercks/plato/commit/b696876c5afe326472e7351b54b37bed22d83645))
+* release please column fix ([3aea804](https://github.com/lassediercks/plato/commit/3aea804ff7c01ce624b3307305bc06cd75072ce2))
+* release please version ([33398e7](https://github.com/lassediercks/plato/commit/33398e7ce502f9c0e82ae3c22ac91c0ce8f2d74f))
+* use release please blocks ([f91d931](https://github.com/lassediercks/plato/commit/f91d931f1d82c815a10196a1b1ee3dc80abb7d71))
+
 ## [0.0.10](https://github.com/lassediercks/plato/compare/v0.0.9...v0.0.10) (2026-02-05)
 
 
