@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.11](https://github.com/lassediercks/plato/compare/v0.0.10...v0.0.11) (2026-02-05)
+
+
+### Bug Fixes
+
+* release please version ([33398e7](https://github.com/lassediercks/plato/commit/33398e7ce502f9c0e82ae3c22ac91c0ce8f2d74f))
+
 ## [0.0.10](https://github.com/lassediercks/plato/compare/v0.0.9...v0.0.10) (2026-02-05)
 
 
