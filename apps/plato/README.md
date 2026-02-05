@@ -24,7 +24,9 @@ Add `plato` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
+    # mix format: off
     {:plato, "~> 0.0.9"} # x-release-please-version
+    # mix format: on
   ]
 end
 ```
