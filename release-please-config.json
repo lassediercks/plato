@@ -5,8 +5,14 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "extra-files": [
-        "apps/plato/mix.exs",
-        "README.md"
+        {
+          "type": "generic",
+          "path": "apps/plato/mix.exs"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        }
       ]
     }
   }
