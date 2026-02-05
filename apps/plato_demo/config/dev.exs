@@ -47,7 +47,9 @@ config :plato_demo, PlatoDemoWeb.Endpoint,
     web_console_logger: true,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
-      ~r"lib/plato_demo_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$"
+      ~r"lib/plato_demo_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$",
+      ~r"lib/plato_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$",
+      ~r"apps/plato/priv/static/.*(css|js)$"
     ]
   ]
 

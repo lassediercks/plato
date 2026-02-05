@@ -415,7 +415,18 @@ defmodule Plato do
   end
 
   defp extract_field_options(opts, field_type) do
-    case field_type do
+    # Extract common options first
+    base_options = %{}
+
+    base_options =
+      if Keyword.has_key?(opts, :as_title) do
+        Map.put(base_options, "as_title", Keyword.get(opts, :as_title))
+      else
+        base_options
+      end
+
+    # Add field-type specific options
+    type_specific_options = case field_type do
       :text ->
         # Extract multiline option for text fields
         if Keyword.has_key?(opts, :multiline) do
@@ -431,5 +442,7 @@ defmodule Plato do
       _ ->
         %{}
     end
+
+    Map.merge(base_options, type_specific_options)
   end
 end

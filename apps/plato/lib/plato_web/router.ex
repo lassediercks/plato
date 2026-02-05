@@ -16,6 +16,8 @@ defmodule PlatoWeb.Router do
     get "/schemas/:id", SchemaController, :show
     post "/schemas/:schema_id/fields", FieldController, :create
     post "/schemas/:schema_id/fields/reorder", FieldController, :reorder
+    get "/schemas/:schema_id/fields/:id/edit", FieldController, :edit
+    post "/schemas/:schema_id/fields/:id/update", FieldController, :update
     get "/schemas/:schema_id/fields/:id/delete", FieldController, :delete_confirm
     post "/schemas/:schema_id/fields/:id/delete", FieldController, :delete
 

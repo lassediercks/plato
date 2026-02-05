@@ -10,13 +10,13 @@ defmodule PlatoDemo.ContentSchemas do
 
   # Singleton schema for site header
   schema "site-header", unique: true do
-    field :logo_text, :text
+    field :logo_text, :text, as_title: true
     field :tagline, :text
   end
 
   # Singleton schema for homepage
   schema "homepage", unique: true do
-    field :hero_title, :text
+    field :hero_title, :text, as_title: true
     field :hero_subtitle, :text
     field :cta_text, :text
     field :cta_link, :text
@@ -24,7 +24,7 @@ defmodule PlatoDemo.ContentSchemas do
 
   # Multiple instances allowed
   schema "blog-post" do
-    field :title, :text
+    field :title, :text, as_title: true
     field :slug, :text
     field :body, :richtext
     field :excerpt, :text
@@ -32,7 +32,7 @@ defmodule PlatoDemo.ContentSchemas do
   end
 
   schema "author" do
-    field :name, :text
+    field :name, :text, as_title: true
     field :bio, :text
     field :email, :text
   end

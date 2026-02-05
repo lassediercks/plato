@@ -38,6 +38,68 @@ defmodule PlatoWeb.FieldController do
     json(conn, %{success: true})
   end
 
+  def edit(conn, %{"schema_id" => schema_id, "id" => field_id}) do
+    schema = repo(conn).get(Plato.Schema, schema_id)
+    field = repo(conn).get(Plato.Field, field_id) |> repo(conn).preload(:referenced_schema)
+    all_schemas = repo(conn).all(Plato.Schema)
+
+    cond do
+      !schema || !field || field.schema_id != String.to_integer(schema_id) ->
+        conn
+        |> put_flash(:error, "Field or schema not found")
+        |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
+
+      schema.managed_by == "code" ->
+        conn
+        |> put_flash(:error, "Cannot edit fields in code-managed schemas")
+        |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
+
+      true ->
+        render(conn, :edit,
+          schema: schema,
+          field: field,
+          all_schemas: all_schemas,
+          base_path: base_path(conn)
+        )
+    end
+  end
+
+  def update(conn, %{"schema_id" => schema_id, "id" => field_id, "field" => field_params}) do
+    field = repo(conn).get(Plato.Field, field_id) |> repo(conn).preload(:schema)
+
+    cond do
+      !field || field.schema_id != String.to_integer(schema_id) ->
+        conn
+        |> put_flash(:error, "Field not found")
+        |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
+
+      field.schema.managed_by == "code" ->
+        conn
+        |> put_flash(:error, "Cannot update fields in code-managed schemas")
+        |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
+
+      true ->
+        attrs =
+          field_params
+          |> normalize_field_params()
+          |> extract_field_options_for_update(field)
+
+        case field
+             |> Plato.Field.changeset(attrs)
+             |> repo(conn).update() do
+          {:ok, _field} ->
+            conn
+            |> put_flash(:info, "Field updated successfully!")
+            |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
+
+          {:error, _changeset} ->
+            conn
+            |> put_flash(:error, "Failed to update field")
+            |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}/fields/#{field_id}/edit")
+        end
+    end
+  end
+
   defp normalize_field_params(%{"field_type" => "reference", "referenced_schema_id" => ""} = params) do
     Map.put(params, "referenced_schema_id", nil)
   end
@@ -49,23 +111,74 @@ defmodule PlatoWeb.FieldController do
   defp normalize_field_params(params), do: params
 
   defp extract_field_options(%{"field_type" => "text"} = params) do
-    # Extract multiline option
+    # Extract multiline and as_title options
+    options = %{}
+
     options =
       case Map.get(params, "multiline") do
-        "true" -> %{"multiline" => true}
-        "on" -> %{"multiline" => true}
-        _ -> %{}
+        "true" -> Map.put(options, "multiline", true)
+        "on" -> Map.put(options, "multiline", true)
+        _ -> options
+      end
+
+    options =
+      case Map.get(params, "as_title") do
+        "true" -> Map.put(options, "as_title", true)
+        "on" -> Map.put(options, "as_title", true)
+        _ -> options
       end
 
     # Remove temporary form fields and add options
     params
     |> Map.delete("multiline")
+    |> Map.delete("as_title")
     |> Map.put("options", options)
   end
 
   defp extract_field_options(params) do
-    # For non-text fields, just set empty options
-    Map.put(params, "options", %{})
+    # Extract as_title option for non-text fields
+    options = %{}
+
+    options =
+      case Map.get(params, "as_title") do
+        "true" -> Map.put(options, "as_title", true)
+        "on" -> Map.put(options, "as_title", true)
+        _ -> options
+      end
+
+    params
+    |> Map.delete("as_title")
+    |> Map.put("options", options)
+  end
+
+  defp extract_field_options_for_update(params, field) do
+    # Similar to extract_field_options but for updates
+    options = %{}
+
+    # Handle as_title for all field types
+    options =
+      case Map.get(params, "as_title") do
+        "true" -> Map.put(options, "as_title", true)
+        "on" -> Map.put(options, "as_title", true)
+        _ -> options
+      end
+
+    # Handle multiline for text fields
+    options =
+      if field.field_type == "text" do
+        case Map.get(params, "multiline") do
+          "true" -> Map.put(options, "multiline", true)
+          "on" -> Map.put(options, "multiline", true)
+          _ -> options
+        end
+      else
+        options
+      end
+
+    params
+    |> Map.delete("multiline")
+    |> Map.delete("as_title")
+    |> Map.put("options", options)
   end
 
   def delete_confirm(conn, %{"schema_id" => schema_id, "id" => field_id}) do

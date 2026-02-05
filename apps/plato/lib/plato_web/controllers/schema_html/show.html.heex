@@ -134,9 +134,15 @@
                     <span class="badge" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.75rem; margin-left: 8px;">multiline</span>
                   <% end %>
                 <% end %>
+                <%= if Map.get(field.options, "as_title") do %>
+                  <span class="badge" style="background-color: #e3f2fd; color: #1565c0; font-size: 0.75rem; margin-left: 8px;">title</span>
+                <% end %>
               </div>
               <%= if @schema.managed_by != "code" do %>
-                <a href={"#{@base_path}/schemas/#{@schema.id}/fields/#{field.id}/delete"} class="btn-delete">Delete</a>
+                <div class="field-actions">
+                  <a href={"#{@base_path}/schemas/#{@schema.id}/fields/#{field.id}/edit"} class="btn-secondary" style="margin-right: 8px;">Edit</a>
+                  <a href={"#{@base_path}/schemas/#{@schema.id}/fields/#{field.id}/delete"} class="btn-delete">Delete</a>
+                </div>
               <% end %>
             </li>
           <% end %>

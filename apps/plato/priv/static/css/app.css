@@ -233,9 +233,24 @@ button:hover {
   gap: 10px;
 }
 
-.btn-secondary {
+/* Unified button sizing for all btn-* classes */
+.btn,
+.btn-secondary,
+.btn-primary,
+.btn-delete,
+a.btn-delete,
+.btn-danger {
   padding: 10px 20px;
   font-size: 16px;
+  border-radius: 4px;
+  display: inline-block;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+a.btn-secondary,
+.btn-secondary {
   background-color: #6c757d;
   color: white;
   border: none;
@@ -343,11 +358,6 @@ select:focus {
 
 .reference-icon {
   margin-right: 5px;
-}
-
-.fields-list a {
-  color: #007bff;
-  text-decoration: none;
 }
 
 .fields-list a:hover {
@@ -472,7 +482,6 @@ select:focus {
 }
 
 .field-value a {
-  color: #007bff;
   text-decoration: none;
 }
 
@@ -561,8 +570,6 @@ select:focus {
 
 .btn-delete,
 a.btn-delete {
-  padding: 6px 12px;
-  font-size: 0.9em;
   background-color: #dc3545;
   color: white;
   border: none;
@@ -656,8 +663,6 @@ a.btn-delete {
 }
 
 .btn-danger {
-  padding: 12px 24px;
-  font-size: 16px;
   background-color: #dc3545;
   color: white;
   border: none;

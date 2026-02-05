@@ -4,9 +4,10 @@ defmodule PlatoWeb.ContentController do
 
   def index(conn, _params) do
     schemas = repo(conn).all(Plato.Schema)
+    fields_query = from(f in Plato.Field, order_by: [asc: f.position])
     contents =
       repo(conn).all(Plato.Content)
-      |> repo(conn).preload(:schema)
+      |> repo(conn).preload([schema: [fields: fields_query]])
 
     # Get count of content instances per schema
     content_counts =
@@ -15,7 +16,49 @@ defmodule PlatoWeb.ContentController do
       |> Enum.map(fn {schema_id, contents} -> {schema_id, length(contents)} end)
       |> Map.new()
 
-    render(conn, :index, schemas: schemas, contents: contents, content_counts: content_counts, base_path: base_path(conn))
+    # Extract title for each content
+    contents_with_titles =
+      contents
+      |> Enum.map(fn content ->
+        title = get_content_title(content, repo(conn))
+        {content, title}
+      end)
+
+    render(conn, :index,
+      schemas: schemas,
+      contents_with_titles: contents_with_titles,
+      content_counts: content_counts,
+      base_path: base_path(conn))
+  end
+
+  # Private helper to extract title from content
+  defp get_content_title(content, repo) do
+    # Find field marked as_title or use first field
+    title_field =
+      Enum.find(content.schema.fields, fn field ->
+        Map.get(field.options, "as_title") == true
+      end) ||
+      List.first(content.schema.fields)
+
+    case title_field do
+      nil ->
+        nil
+
+      field ->
+        # Get field value from field_values map
+        field_id_str = to_string(field.id)
+        field_value = Map.get(content.field_values, field_id_str)
+
+        # If it's a reference field, resolve it
+        if field.field_type == "reference" && field_value do
+          case repo.get(Plato.Content, field_value) do
+            nil -> field_value
+            referenced_content -> get_content_title(referenced_content, repo)
+          end
+        else
+          field_value
+        end
+    end
   end
 
   def new(conn, %{"schema_id" => schema_id}) do

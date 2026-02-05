@@ -31,14 +31,19 @@
 
   <div class="content-list-section">
     <h2>Existing Content</h2>
-    <%= if Enum.empty?(@contents) do %>
+    <%= if Enum.empty?(@contents_with_titles) do %>
       <p class="empty-state">No content yet. Create some above!</p>
     <% else %>
       <ul class="content-list">
-        <%= for content <- @contents do %>
+        <%= for {content, title} <- @contents_with_titles do %>
           <li>
             <a href={"#{@base_path}/content/#{content.id}"} class="content-link">
-              <span class="content-schema"><%= content.schema.name %></span>
+              <div class="content-info">
+                <span class="content-schema"><%= content.schema.name %></span>
+                <%= if title do %>
+                  <span class="content-title">- <%= title %></span>
+                <% end %>
+              </div>
               <span class="content-date">Created: <%= Calendar.strftime(content.inserted_at, "%Y-%m-%d %H:%M") %></span>
             </a>
           </li>
