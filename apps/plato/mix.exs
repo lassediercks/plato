@@ -4,9 +4,9 @@ defmodule Plato.MixProject do
   def project do
     [
       app: :plato,
-      # mix format: off
-      version: "0.0.10", # x-release-please-version
-      # mix format: on
+      # x-release-please-start-version
+      version: "0.0.10",
+      # x-release-please-end
       build_path: "../../_build",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
@@ -72,9 +72,9 @@ defmodule Plato.MixProject do
     [
       main: "readme",
       extras: ["README.md", "CHANGELOG.md"],
-      # mix format: off
-      source_ref: "v0.0.10", # x-release-please-version
-      # mix format: on
+      # x-release-please-start-version
+      source_ref: "v0.0.10",
+      # x-release-please-end
       source_url: "https://github.com/lassediercks/plato"
     ]
   end
