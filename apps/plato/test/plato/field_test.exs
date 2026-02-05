@@ -68,6 +68,19 @@ defmodule Plato.FieldTest do
       assert %{field_type: ["is invalid"]} = errors_on(changeset)
     end
 
+    test "accepts position field", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "test",
+        field_type: "text",
+        position: 5
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :position) == 5
+    end
+
     test "reference field requires referenced_schema_id", %{schema: schema} do
       # Without a name, forward references aren't allowed
       changeset =
@@ -183,6 +196,46 @@ defmodule Plato.FieldTest do
       assert errors[:schema_id]
       assert errors[:name]
       # field_type has a default, so not required
+    end
+
+    test "creates field with auto-generated position", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "first_field",
+        field_type: "text"
+      }
+
+      assert {:ok, field} = Field.create(attrs, Repo)
+      assert field.position != nil
+      assert field.position > 0
+    end
+
+    test "creates multiple fields with incrementing positions", %{schema: schema} do
+      {:ok, field1} = Field.create(%{schema_id: schema.id, name: "field1", field_type: "text"}, Repo)
+      {:ok, field2} = Field.create(%{schema_id: schema.id, name: "field2", field_type: "text"}, Repo)
+      {:ok, field3} = Field.create(%{schema_id: schema.id, name: "field3", field_type: "text"}, Repo)
+
+      assert field2.position > field1.position
+      assert field3.position > field2.position
+    end
+
+    test "positions are scoped to schema", %{schema: schema} do
+      other_schema = create_schema(%{name: "other_schema"})
+
+      {:ok, field1} = Field.create(%{schema_id: schema.id, name: "field1", field_type: "text"}, Repo)
+      {:ok, field2} = Field.create(%{schema_id: other_schema.id, name: "field2", field_type: "text"}, Repo)
+
+      # Both should start at position 1 since they're in different schemas
+      assert field1.position == 1
+      assert field2.position == 1
+    end
+
+    test "respects explicitly provided position", %{schema: schema} do
+      {:ok, field1} = Field.create(%{schema_id: schema.id, name: "field1", field_type: "text"}, Repo)
+      {:ok, field2} = Field.create(%{schema_id: schema.id, name: "field2", field_type: "text", position: 100}, Repo)
+
+      assert field2.position == 100
+      assert field1.position < field2.position
     end
   end
 
@@ -521,6 +574,72 @@ defmodule Plato.FieldTest do
       {:ok, updated} = Repo.update(changeset)
 
       assert updated.options == %{"max_length" => 5000}
+    end
+  end
+
+  describe "field position and ordering" do
+    setup do
+      schema = create_schema(%{name: "test_schema"})
+      %{schema: schema}
+    end
+
+    test "can update field position", %{schema: schema} do
+      {:ok, field} = Field.create(%{schema_id: schema.id, name: "test", field_type: "text"}, Repo)
+      original_position = field.position
+
+      changeset = Field.changeset(field, %{position: original_position + 10})
+      {:ok, updated} = Repo.update(changeset)
+
+      assert updated.position == original_position + 10
+    end
+
+    test "multiple fields maintain distinct positions within schema", %{schema: schema} do
+      {:ok, field1} = Field.create(%{schema_id: schema.id, name: "field1", field_type: "text"}, Repo)
+      {:ok, field2} = Field.create(%{schema_id: schema.id, name: "field2", field_type: "text"}, Repo)
+      {:ok, field3} = Field.create(%{schema_id: schema.id, name: "field3", field_type: "text"}, Repo)
+
+      positions = [field1.position, field2.position, field3.position]
+      unique_positions = Enum.uniq(positions)
+
+      assert length(positions) == length(unique_positions)
+    end
+
+    test "reordering fields updates positions correctly", %{schema: schema} do
+      {:ok, field1} = Field.create(%{schema_id: schema.id, name: "field1", field_type: "text"}, Repo)
+      {:ok, field2} = Field.create(%{schema_id: schema.id, name: "field2", field_type: "text"}, Repo)
+      {:ok, field3} = Field.create(%{schema_id: schema.id, name: "field3", field_type: "text"}, Repo)
+
+      # Swap positions of field1 and field3
+      field1 |> Field.changeset(%{position: field3.position}) |> Repo.update()
+      field3 |> Field.changeset(%{position: field1.position}) |> Repo.update()
+
+      updated_field1 = Repo.get(Field, field1.id)
+      updated_field3 = Repo.get(Field, field3.id)
+
+      assert updated_field1.position == field3.position
+      assert updated_field3.position == field1.position
+    end
+
+    test "position survives name updates", %{schema: schema} do
+      {:ok, field} = Field.create(%{schema_id: schema.id, name: "original", field_type: "text"}, Repo)
+      original_position = field.position
+
+      changeset = Field.changeset(field, %{name: "updated"})
+      {:ok, updated} = Repo.update(changeset)
+
+      assert updated.position == original_position
+      assert updated.name == "updated"
+    end
+
+    test "position survives field_type changes", %{schema: schema} do
+      {:ok, field} = Field.create(%{schema_id: schema.id, name: "content", field_type: "text"}, Repo)
+      original_position = field.position
+
+      changeset = Field.changeset(field, %{field_type: "richtext"})
+      {:ok, updated} = Repo.update(changeset)
+
+      assert updated.position == original_position
+      assert updated.field_type == "richtext"
     end
   end
 

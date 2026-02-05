@@ -1,5 +1,6 @@
 defmodule PlatoWeb.ContentController do
   use Phoenix.Controller, formats: [:html]
+  import Ecto.Query
 
   def index(conn, _params) do
     schemas = repo(conn).all(Plato.Schema)
@@ -25,7 +26,8 @@ defmodule PlatoWeb.ContentController do
         |> redirect(to: "#{base_path(conn)}/content")
 
       schema ->
-        schema = repo(conn).preload(schema, [fields: :referenced_schema])
+        fields_query = from(f in Plato.Field, order_by: [asc: f.position])
+        schema = repo(conn).preload(schema, [fields: {fields_query, :referenced_schema}])
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
         render(conn, :new, schema: schema, all_contents: all_contents, base_path: base_path(conn))
     end
@@ -86,7 +88,8 @@ defmodule PlatoWeb.ContentController do
         |> redirect(to: "#{base_path(conn)}/content")
 
       content ->
-        content = repo(conn).preload(content, [schema: [fields: :referenced_schema]])
+        fields_query = from(f in Plato.Field, order_by: [asc: f.position])
+        content = repo(conn).preload(content, [schema: [fields: {fields_query, :referenced_schema}]])
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
         render(conn, :show, content: content, all_contents: all_contents, base_path: base_path(conn))
     end
@@ -100,7 +103,8 @@ defmodule PlatoWeb.ContentController do
         |> redirect(to: "#{base_path(conn)}/content")
 
       content ->
-        content = repo(conn).preload(content, [schema: [fields: :referenced_schema]])
+        fields_query = from(f in Plato.Field, order_by: [asc: f.position])
+        content = repo(conn).preload(content, [schema: [fields: {fields_query, :referenced_schema}]])
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
         render(conn, :edit, content: content, all_contents: all_contents, base_path: base_path(conn))
     end

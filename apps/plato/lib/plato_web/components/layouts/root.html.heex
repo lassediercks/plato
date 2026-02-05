@@ -707,6 +707,44 @@ trix-editor:focus {
 trix-editor:empty:before {
   color: #999;
 }
+
+/* Drag and drop styles for fields */
+.sortable-field-item {
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.sortable-field-item[draggable="true"] {
+  cursor: move;
+}
+
+.sortable-field-item[draggable="false"] {
+  cursor: default;
+}
+
+.sortable-field-item[draggable="true"]:hover {
+  background-color: #f0f0f0 !important;
+}
+
+.sortable-field-item .drag-handle {
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 18px;
+  cursor: grab;
+  padding: 0 5px;
+  user-select: none;
+}
+
+.sortable-field-item .drag-handle:active {
+  cursor: grabbing;
+}
+
+.sortable-field-item[draggable="true"] .field-info {
+  padding-left: 25px;
+}
 """ %></style>
   </head>
   <body>

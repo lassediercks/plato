@@ -22,6 +22,22 @@ defmodule PlatoWeb.FieldController do
     end
   end
 
+  def reorder(conn, %{"schema_id" => _schema_id, "field_ids" => field_ids}) do
+    # Update position for each field based on the order in the array
+    Enum.with_index(field_ids, 1)
+    |> Enum.each(fn {field_id, position} ->
+      case repo(conn).get(Plato.Field, field_id) do
+        nil -> :ok
+        field ->
+          field
+          |> Plato.Field.changeset(%{position: position})
+          |> repo(conn).update()
+      end
+    end)
+
+    json(conn, %{success: true})
+  end
+
   defp normalize_field_params(%{"field_type" => "reference", "referenced_schema_id" => ""} = params) do
     Map.put(params, "referenced_schema_id", nil)
   end

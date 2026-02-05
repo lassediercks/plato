@@ -1,5 +1,6 @@
 defmodule PlatoWeb.SchemaController do
   use Phoenix.Controller, formats: [:html]
+  import Ecto.Query
 
   def index(conn, _params) do
     schemas = repo(conn).all(Plato.Schema)
@@ -28,7 +29,8 @@ defmodule PlatoWeb.SchemaController do
         |> redirect(to: base_path(conn))
 
       schema ->
-        schema = repo(conn).preload(schema, [fields: :referenced_schema])
+        fields_query = from(f in Plato.Field, order_by: [asc: f.position])
+        schema = repo(conn).preload(schema, [fields: {fields_query, :referenced_schema}])
         all_schemas = repo(conn).all(Plato.Schema)
         render(conn, :show, schema: schema, all_schemas: all_schemas, base_path: base_path(conn))
     end

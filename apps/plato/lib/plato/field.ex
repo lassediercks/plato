@@ -1,6 +1,7 @@
 defmodule Plato.Field do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   @type t :: %__MODULE__{
           id: integer() | nil,
@@ -9,6 +10,7 @@ defmodule Plato.Field do
           schema_id: integer(),
           referenced_schema_id: integer() | nil,
           options: map(),
+          position: integer() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
@@ -17,6 +19,7 @@ defmodule Plato.Field do
     field(:name, :string)
     field(:field_type, :string, default: "text")
     field(:options, :map, default: %{})
+    field(:position, :integer)
     belongs_to(:schema, Plato.Schema)
     belongs_to(:referenced_schema, Plato.Schema)
     timestamps(type: :utc_datetime)
@@ -27,7 +30,7 @@ defmodule Plato.Field do
   """
   def changeset(field, attrs) do
     field
-    |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options])
+    |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options, :position])
     |> validate_required([:schema_id, :name])
     |> validate_inclusion(:field_type, ["text", "richtext", "reference"])
     |> validate_options()
@@ -85,8 +88,38 @@ defmodule Plato.Field do
 
   @spec create(map(), module()) :: {:ok, t()} | {:error, Ecto.Changeset.t()}
   def create(attrs, repo \\ Plato.Repo) do
+    # If position is not provided, calculate the next position for this schema
+    attrs_with_position =
+      if Map.has_key?(attrs, :position) or Map.has_key?(attrs, "position") do
+        attrs
+      else
+        schema_id = attrs[:schema_id] || attrs["schema_id"]
+
+        # Only calculate position if schema_id is present
+        if schema_id do
+          # Convert to integer if it's a string
+          schema_id = if is_binary(schema_id), do: String.to_integer(schema_id), else: schema_id
+
+          max_position =
+            from(f in __MODULE__,
+              where: f.schema_id == ^schema_id,
+              select: max(f.position)
+            )
+            |> repo.one()
+
+          next_position = (max_position || 0) + 1
+
+          # Detect whether the attrs map uses atom or string keys
+          # Use the same key type to avoid mixed keys
+          position_key = if Map.has_key?(attrs, :schema_id), do: :position, else: "position"
+          Map.put(attrs, position_key, next_position)
+        else
+          attrs
+        end
+      end
+
     %__MODULE__{}
-    |> changeset(attrs)
+    |> changeset(attrs_with_position)
     |> repo.insert()
   end
 end
