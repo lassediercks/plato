@@ -19,6 +19,7 @@ defmodule PlatoDemoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/blog/:slug", PageController, :blog_post
   end
 
   # Mount Plato CMS admin

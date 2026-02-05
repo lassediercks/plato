@@ -26,7 +26,7 @@ defmodule PlatoDemo.ContentSchemas do
   schema "blog-post" do
     field :title, :text
     field :slug, :text
-    field :body, :text
+    field :body, :richtext
     field :excerpt, :text
     field :author, :reference, to: "author"
   end

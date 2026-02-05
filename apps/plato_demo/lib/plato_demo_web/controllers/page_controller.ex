@@ -21,4 +21,17 @@ defmodule PlatoDemoWeb.PageController do
       blog_posts: blog_posts
     )
   end
+
+  def blog_post(conn, %{"slug" => slug}) do
+    case Plato.get_content_by_field("blog-post", "slug", slug, otp_app: :plato_demo) do
+      {:ok, post} ->
+        render(conn, :blog_post, post: post)
+
+      {:error, _reason} ->
+        conn
+        |> put_status(:not_found)
+        |> put_view(PlatoDemoWeb.ErrorHTML)
+        |> render(:"404")
+    end
+  end
 end

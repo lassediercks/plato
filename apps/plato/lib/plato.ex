@@ -133,6 +133,54 @@ defmodule Plato do
   end
 
   @doc """
+  Get content by matching a field value.
+
+  Finds content within a schema where a specific field matches a given value.
+  Useful for slug-based lookups, email searches, etc.
+
+  ## Examples
+
+      Plato.get_content_by_field("blog-post", "slug", "my-first-post", otp_app: :my_app)
+      # => {:ok, %{title: "My First Post", slug: "my-first-post", body: "..."}}
+
+      Plato.get_content_by_field("author", "email", "jane@example.com", otp_app: :my_app)
+      # => {:ok, %{name: "Jane Doe", email: "jane@example.com", ...}}
+  """
+  @spec get_content_by_field(String.t(), String.t(), String.t(), opts()) ::
+          {:ok, content_map()} | {:error, atom()}
+  def get_content_by_field(schema_name, field_name, field_value, opts \\ []) do
+    repo = get_repo(opts)
+
+    with {:ok, schema} <- get_schema_by_name(schema_name, repo) do
+      schema = repo.preload(schema, :fields)
+      field = Enum.find(schema.fields, fn f -> f.name == field_name end)
+
+      case field do
+        nil ->
+          {:error, :field_not_found}
+
+        field ->
+          field_id_str = to_string(field.id)
+
+          query =
+            from(c in Content,
+              where: c.schema_id == ^schema.id,
+              where: fragment("?->>? = ?", c.field_values, ^field_id_str, ^field_value)
+            )
+
+          case repo.one(query) do
+            nil ->
+              {:error, :content_not_found}
+
+            content ->
+              resolved = ContentResolver.resolve_fields(content, repo)
+              {:ok, resolved}
+          end
+      end
+    end
+  end
+
+  @doc """
   Create content for a schema.
 
   ## Examples

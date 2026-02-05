@@ -1,0 +1,44 @@
+<div class="mx-auto max-w-3xl px-4 py-12">
+  <nav class="mb-8">
+    <a href="/" class="text-blue-600 hover:text-blue-800 hover:underline">
+      ← Back to Home
+    </a>
+  </nav>
+
+  <article class="prose prose-lg max-w-none">
+    <h1 class="text-4xl font-bold mb-4"><%= @post.title %></h1>
+
+    <%= if @post.author do %>
+      <div class="flex items-center mb-8 text-gray-600 not-prose">
+        <div>
+          <p class="font-semibold text-gray-900"><%= @post.author.name %></p>
+          <%= if @post.author.email do %>
+            <p class="text-sm"><%= @post.author.email %></p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= if @post.excerpt do %>
+      <p class="text-xl text-gray-600 mb-8 font-medium"><%= @post.excerpt %></p>
+    <% end %>
+
+    <%= if @post.body do %>
+      <div class="mt-8">
+        <%= raw(@post.body) %>
+      </div>
+    <% else %>
+      <p class="text-gray-500 italic">No content yet.</p>
+    <% end %>
+  </article>
+
+  <div class="mt-12 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+    <h3 class="text-lg font-semibold mb-2">🎨 Template Features Demo</h3>
+    <ul class="text-sm text-gray-700 space-y-1">
+      <li>✓ Dynamic routing with <code class="bg-white px-2 py-0.5 rounded">/blog/:slug</code></li>
+      <li>✓ Rich text rendering with <code class="bg-white px-2 py-0.5 rounded">raw/1</code></li>
+      <li>✓ Author reference resolution</li>
+      <li>✓ Query by field value: <code class="bg-white px-2 py-0.5 rounded">get_content_by_field/4</code></li>
+    </ul>
+  </div>
+</div>

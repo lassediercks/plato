@@ -69,21 +69,40 @@
       <div class="grid gap-6">
         <%= for post <- @blog_posts do %>
           <article class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition">
-            <h3 class="text-2xl font-semibold mb-2"><%= post.title %></h3>
+            <h3 class="text-2xl font-semibold mb-2">
+              <%= if post.slug do %>
+                <a href={"/blog/#{post.slug}"} class="text-gray-900 hover:text-blue-600 transition">
+                  <%= post.title %>
+                </a>
+              <% else %>
+                <%= post.title %>
+              <% end %>
+            </h3>
 
             <%= if post.excerpt do %>
               <p class="text-gray-600 mb-4"><%= post.excerpt %></p>
             <% end %>
 
-            <%= if post.author do %>
-              <div class="flex items-center text-sm text-gray-500">
-                <span>By <%= post.author.name %></span>
-                <%= if post.author.email do %>
-                  <span class="mx-2">•</span>
-                  <span><%= post.author.email %></span>
-                <% end %>
-              </div>
-            <% end %>
+            <div class="flex items-center justify-between">
+              <%= if post.author do %>
+                <div class="flex items-center text-sm text-gray-500">
+                  <span>By <%= post.author.name %></span>
+                  <%= if post.author.email do %>
+                    <span class="mx-2">•</span>
+                    <span><%= post.author.email %></span>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <%= if post.slug do %>
+                <a
+                  href={"/blog/#{post.slug}"}
+                  class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Read more →
+                </a>
+              <% end %>
+            </div>
           </article>
         <% end %>
       </div>
