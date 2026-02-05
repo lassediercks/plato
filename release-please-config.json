@@ -11,7 +11,7 @@
         },
         {
           "type": "generic",
-          "path": "README.md"
+          "path": "apps/plato/README.md"
         }
       ]
     }
