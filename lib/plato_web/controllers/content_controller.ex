@@ -14,7 +14,7 @@ defmodule PlatoWeb.ContentController do
       |> Enum.map(fn {schema_id, contents} -> {schema_id, length(contents)} end)
       |> Map.new()
 
-    render(conn, :index, schemas: schemas, contents: contents, content_counts: content_counts)
+    render(conn, :index, schemas: schemas, contents: contents, content_counts: content_counts, base_path: base_path(conn))
   end
 
   def new(conn, %{"schema_id" => schema_id}) do
@@ -22,12 +22,12 @@ defmodule PlatoWeb.ContentController do
       nil ->
         conn
         |> put_flash(:error, "Schema not found")
-        |> redirect(to: "/content")
+        |> redirect(to: "#{base_path(conn)}/content")
 
       schema ->
         schema = repo(conn).preload(schema, [fields: :referenced_schema])
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
-        render(conn, :new, schema: schema, all_contents: all_contents)
+        render(conn, :new, schema: schema, all_contents: all_contents, base_path: base_path(conn))
     end
   end
 
@@ -42,7 +42,7 @@ defmodule PlatoWeb.ContentController do
       if existing_content do
         conn
         |> put_flash(:error, "This schema is unique and already has content. You can only create one instance.")
-        |> redirect(to: "/content")
+        |> redirect(to: "#{base_path(conn)}/content")
       else
         create_content(conn, schema_id, content_params)
       end
@@ -69,12 +69,12 @@ defmodule PlatoWeb.ContentController do
       {:ok, _content} ->
         conn
         |> put_flash(:info, "Content created successfully!")
-        |> redirect(to: "/content")
+        |> redirect(to: "#{base_path(conn)}/content")
 
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "Failed to create content")
-        |> redirect(to: "/content/new?schema_id=#{schema_id}")
+        |> redirect(to: "#{base_path(conn)}/content/new?schema_id=#{schema_id}")
     end
   end
 
@@ -83,12 +83,12 @@ defmodule PlatoWeb.ContentController do
       nil ->
         conn
         |> put_flash(:error, "Content not found")
-        |> redirect(to: "/content")
+        |> redirect(to: "#{base_path(conn)}/content")
 
       content ->
         content = repo(conn).preload(content, [schema: [fields: :referenced_schema]])
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
-        render(conn, :show, content: content, all_contents: all_contents)
+        render(conn, :show, content: content, all_contents: all_contents, base_path: base_path(conn))
     end
   end
 
@@ -97,12 +97,12 @@ defmodule PlatoWeb.ContentController do
       nil ->
         conn
         |> put_flash(:error, "Content not found")
-        |> redirect(to: "/content")
+        |> redirect(to: "#{base_path(conn)}/content")
 
       content ->
         content = repo(conn).preload(content, [schema: [fields: :referenced_schema]])
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
-        render(conn, :edit, content: content, all_contents: all_contents)
+        render(conn, :edit, content: content, all_contents: all_contents, base_path: base_path(conn))
     end
   end
 
@@ -111,7 +111,7 @@ defmodule PlatoWeb.ContentController do
       nil ->
         conn
         |> put_flash(:error, "Content not found")
-        |> redirect(to: "/content")
+        |> redirect(to: "#{base_path(conn)}/content")
 
       content ->
         field_values =
@@ -127,12 +127,12 @@ defmodule PlatoWeb.ContentController do
           {:ok, updated_content} ->
             conn
             |> put_flash(:info, "Content updated successfully!")
-            |> redirect(to: "/content/#{updated_content.id}")
+            |> redirect(to: "#{base_path(conn)}/content/#{updated_content.id}")
 
           {:error, _changeset} ->
             conn
             |> put_flash(:error, "Failed to update content")
-            |> redirect(to: "/content/#{id}/edit")
+            |> redirect(to: "#{base_path(conn)}/content/#{id}/edit")
         end
     end
   end
@@ -145,4 +145,7 @@ defmodule PlatoWeb.ContentController do
     |> Application.get_env(:plato, [])
     |> Keyword.get(:repo, Plato.Repo)
   end
+
+  # Private helper to get base_path from conn assigns
+  defp base_path(conn), do: conn.assigns[:plato_base_path] || "/"
 end

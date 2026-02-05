@@ -43,12 +43,12 @@ defmodule Mix.Tasks.Plato.Install do
 
           Mix.shell().info([
             :green,
-            "\n✓ Successfully copied #{copied_count} migration(s) to #{migrations_target}\n"
+            "\n✓ Successfully copied #{copied_count} migration file(s) to #{migrations_target}\n"
           ])
 
           Mix.shell().info([
             "\nNext steps:\n",
-            "  1. Review the migrations in priv/repo/migrations/\n",
+            "  1. Review the migration in priv/repo/migrations/\n",
             "  2. Run: mix ecto.migrate\n",
             "  3. Configure Plato in your config/config.exs:\n\n",
             "     config :my_app, :plato,\n",

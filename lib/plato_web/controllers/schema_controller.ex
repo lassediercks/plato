@@ -3,7 +3,7 @@ defmodule PlatoWeb.SchemaController do
 
   def index(conn, _params) do
     schemas = repo(conn).all(Plato.Schema)
-    render(conn, :index, schemas: schemas)
+    render(conn, :index, schemas: schemas, base_path: base_path(conn))
   end
 
   def create(conn, %{"schema" => schema_params}) do
@@ -11,12 +11,12 @@ defmodule PlatoWeb.SchemaController do
       {:ok, schema} ->
         conn
         |> put_flash(:info, "Schema '#{schema.name}' created successfully!")
-        |> redirect(to: "/")
+        |> redirect(to: base_path(conn))
 
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "Failed to create schema")
-        |> redirect(to: "/")
+        |> redirect(to: base_path(conn))
     end
   end
 
@@ -25,12 +25,12 @@ defmodule PlatoWeb.SchemaController do
       nil ->
         conn
         |> put_flash(:error, "Schema not found")
-        |> redirect(to: "/")
+        |> redirect(to: base_path(conn))
 
       schema ->
         schema = repo(conn).preload(schema, [fields: :referenced_schema])
         all_schemas = repo(conn).all(Plato.Schema)
-        render(conn, :show, schema: schema, all_schemas: all_schemas)
+        render(conn, :show, schema: schema, all_schemas: all_schemas, base_path: base_path(conn))
     end
   end
 
@@ -41,5 +41,10 @@ defmodule PlatoWeb.SchemaController do
     otp_app
     |> Application.get_env(:plato, [])
     |> Keyword.get(:repo, Plato.Repo)
+  end
+
+  # Private helper to get base path from conn assigns
+  defp base_path(conn) do
+    conn.assigns[:plato_base_path] || "/"
   end
 end

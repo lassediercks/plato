@@ -1,7 +1,8 @@
 <div class="container">
   <h1>Edit <%= @content.schema.name %> #<%= @content.id %></h1>
 
-  <form action={"/content/#{@content.id}/update"} method="post" >
+  <form action={"#{@base_path}/content/#{@content.id}/update"} method="post" >
+    <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
     <%= for field <- @content.schema.fields do %>
       <div class="form-group">
         <label for={"field_#{field.id}"}><%= field.name %>:</label>
@@ -38,7 +39,7 @@
 
     <div class="actions">
       <button type="submit">Save Changes</button>
-      <a href={"/content/#{@content.id}"} class="btn-secondary">Cancel</a>
+      <a href={"#{@base_path}/content/#{@content.id}"} class="btn-secondary">Cancel</a>
     </div>
   </form>
 </div>

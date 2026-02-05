@@ -38,7 +38,8 @@
     <div class="fields-section">
       <h2>Fields</h2>
 
-      <form action={"/schemas/#{@schema.id}/fields"} method="post" class="add-field-form">
+      <form action={"#{@base_path}/schemas/#{@schema.id}/fields"} method="post" class="add-field-form">
+        <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
         <div class="form-group">
           <label for="field_type">Add:</label>
           <select id="field_type" name="field[field_type]" required>
@@ -84,7 +85,7 @@
                   <span class="field-name">
                     <span class="reference-icon">🔗</span>
                     <%= if field.referenced_schema do %>
-                      <a href={"/schemas/#{field.referenced_schema.id}"}>
+                      <a href={"#{@base_path}/schemas/#{field.referenced_schema.id}"}>
                         <%= field.referenced_schema.name %>
                       </a>
                     <% else %>
@@ -97,7 +98,7 @@
                   <span class="field-type"><%= field.field_type %></span>
                 <% end %>
               </div>
-              <a href={"/schemas/#{@schema.id}/fields/#{field.id}/delete"} class="btn-delete">Delete</a>
+              <a href={"#{@base_path}/schemas/#{@schema.id}/fields/#{field.id}/delete"} class="btn-delete">Delete</a>
             </li>
           <% end %>
         </ul>
@@ -127,7 +128,7 @@
     </script>
 
     <div class="actions">
-      <a href="/" class="btn-secondary">← Back to List</a>
+      <a href={@base_path} class="btn-secondary">← Back to List</a>
     </div>
   </div>
 </div>

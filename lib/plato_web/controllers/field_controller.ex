@@ -12,12 +12,12 @@ defmodule PlatoWeb.FieldController do
       {:ok, field} ->
         conn
         |> put_flash(:info, "Field '#{field.name}' added successfully!")
-        |> redirect(to: "/schemas/#{schema_id}")
+        |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
 
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "Failed to add field")
-        |> redirect(to: "/schemas/#{schema_id}")
+        |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
     end
   end
 
@@ -55,12 +55,13 @@ defmodule PlatoWeb.FieldController do
       render(conn, :delete_confirm,
         schema: schema,
         field: field,
-        affected_contents: affected_contents
+        affected_contents: affected_contents,
+        base_path: base_path(conn)
       )
     else
       conn
       |> put_flash(:error, "Field or schema not found")
-      |> redirect(to: "/schemas/#{schema_id}")
+      |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
     end
   end
 
@@ -88,11 +89,11 @@ defmodule PlatoWeb.FieldController do
 
       conn
       |> put_flash(:info, "Field '#{field.name}' deleted successfully!")
-      |> redirect(to: "/schemas/#{schema_id}")
+      |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
     else
       conn
       |> put_flash(:error, "Field not found")
-      |> redirect(to: "/schemas/#{schema_id}")
+      |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
     end
   end
 
@@ -104,4 +105,7 @@ defmodule PlatoWeb.FieldController do
     |> Application.get_env(:plato, [])
     |> Keyword.get(:repo, Plato.Repo)
   end
+
+  # Private helper to get base_path from conn assigns
+  defp base_path(conn), do: conn.assigns[:plato_base_path] || "/"
 end

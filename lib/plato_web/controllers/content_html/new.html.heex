@@ -1,7 +1,8 @@
 <div class="container">
   <h1>Create <%= @schema.name %></h1>
 
-  <form action={"/content"} method="post" class="content-form">
+  <form action={"#{@base_path}/content"} method="post" class="content-form">
+    <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
     <input type="hidden" name="schema_id" value={@schema.id} />
 
     <%= for field <- @schema.fields do %>
@@ -37,7 +38,7 @@
 
     <div class="actions">
       <button type="submit">Create</button>
-      <a href="/content" class="btn-secondary">Cancel</a>
+      <a href={"#{@base_path}/content"} class="btn-secondary">Cancel</a>
     </div>
   </form>
 </div>

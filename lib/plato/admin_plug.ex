@@ -16,9 +16,12 @@ defmodule Plato.AdminPlug do
             plato_admin "/admin/cms", otp_app: :my_app
         """
 
-    # Store otp_app in conn assigns for controllers to use
+    base_path = opts[:base_path] || "/"
+
+    # Store otp_app and base_path in conn assigns for controllers and templates to use
     conn
     |> Plug.Conn.assign(:plato_otp_app, otp_app)
+    |> Plug.Conn.assign(:plato_base_path, base_path)
     |> PlatoWeb.Router.call(PlatoWeb.Router.init([]))
   end
 end

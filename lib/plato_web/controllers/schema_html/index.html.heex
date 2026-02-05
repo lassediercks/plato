@@ -1,7 +1,8 @@
 <div class="container">
   <h1>Create a New Schema</h1>
 
-  <form action="/" method="post">
+  <form action={@base_path} method="post">
+    <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
     <div class="form-group">
       <label for="schema_name">
         Schema Name:
@@ -41,7 +42,7 @@
       <ul>
         <%= for schema <- @schemas do %>
           <li>
-            <a href={"/schemas/#{schema.id}"} class="schema-link">
+            <a href={"#{@base_path}/schemas/#{schema.id}"} class="schema-link">
               <span class="schema-name"><%= schema.name %></span>
               <span class="schema-date">Created: <%= Calendar.strftime(schema.inserted_at, "%Y-%m-%d %H:%M") %></span>
             </a>

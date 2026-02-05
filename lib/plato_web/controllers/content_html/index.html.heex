@@ -5,7 +5,7 @@
     <h2>Create New Content</h2>
     <div class="schema-selector">
       <%= if Enum.empty?(@schemas) do %>
-        <p class="empty-state">No schemas available. <a href="/">Create a schema first</a>.</p>
+        <p class="empty-state">No schemas available. <a href={@base_path}>Create a schema first</a>.</p>
       <% else %>
         <div class="schema-cards">
           <%= for schema <- @schemas do %>
@@ -13,7 +13,7 @@
             <% can_create = !schema.unique || content_count == 0 %>
 
             <%= if can_create do %>
-              <a href={"/content/new?schema_id=#{schema.id}"} class="schema-card">
+              <a href={"#{@base_path}/content/new?schema_id=#{schema.id}"} class="schema-card">
                 <h3>
                   <%= schema.name %>
                   <%= if schema.unique do %>
@@ -37,7 +37,7 @@
       <ul class="content-list">
         <%= for content <- @contents do %>
           <li>
-            <a href={"/content/#{content.id}"} class="content-link">
+            <a href={"#{@base_path}/content/#{content.id}"} class="content-link">
               <span class="content-schema"><%= content.schema.name %></span>
               <span class="content-date">Created: <%= Calendar.strftime(content.inserted_at, "%Y-%m-%d %H:%M") %></span>
             </a>

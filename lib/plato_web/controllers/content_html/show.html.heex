@@ -6,7 +6,7 @@
       <div class="info-row">
         <span class="label">Schema:</span>
         <span class="value">
-          <a href={"/schemas/#{@content.schema.id}"}><%= @content.schema.name %></a>
+          <a href={"#{@base_path}/schemas/#{@content.schema.id}"}><%= @content.schema.name %></a>
         </span>
       </div>
 
@@ -34,7 +34,7 @@
               <%= if content_id do %>
                 <% referenced_content = Enum.find(@all_contents, &(&1.id == String.to_integer(content_id))) %>
                 <%= if referenced_content do %>
-                  <a href={"/content/#{referenced_content.id}"}>
+                  <a href={"#{@base_path}/content/#{referenced_content.id}"}>
                     <%= referenced_content.schema.name %> #<%= referenced_content.id %>
                   </a>
                 <% else %>
@@ -50,8 +50,8 @@
     </div>
 
     <div class="actions">
-      <a href={"/content/#{@content.id}/edit"} class="btn-primary">Edit</a>
-      <a href="/content" class="btn-secondary">← Back to Content</a>
+      <a href={"#{@base_path}/content/#{@content.id}/edit"} class="btn-primary">Edit</a>
+      <a href={"#{@base_path}/content"} class="btn-secondary">← Back to Content</a>
     </div>
   </div>
 </div>
