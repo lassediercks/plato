@@ -25,6 +25,8 @@ plato-*.tar
 *.swo
 *~
 
+doc/
+
 # OS files
 .DS_Store
 Thumbs.db
