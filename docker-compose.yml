@@ -2,27 +2,27 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: plato_psql_user
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: plato
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: plato_demo_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U plato_psql_user -d plato"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  app:
+  plato_test:
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: "ecto://plato_psql_user:1234@db:5432/plato"
-      MIX_ENV: dev
-      PORT: 4500
-    ports:
-      - "4500:4500"
+      MIX_ENV: test
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     depends_on:
       db:
         condition: service_healthy
@@ -32,12 +32,55 @@ services:
       - app_build:/app/_build
     command: >
       sh -c "
+        echo '=== Installing Hex and Rebar ===' &&
         mix local.hex --force &&
         mix local.rebar --force &&
+        echo '=== Getting dependencies ===' &&
         mix deps.get &&
-        mix compile &&
+        echo '=== Setting up test database ===' &&
+        cd apps/plato &&
+        MIX_ENV=test mix ecto.create &&
+        MIX_ENV=test mix ecto.migrate &&
+        echo '=== Running Plato library tests ===' &&
+        mix test &&
+        echo '=== ✅ All tests passed! ===' &&
+        echo 'Plato library is ready to use.'
+      "
+
+  demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: "ecto://postgres:postgres@db:5432/plato_demo_dev"
+      MIX_ENV: dev
+      PORT: 4500
+    ports:
+      - "4500:4500"
+    depends_on:
+      db:
+        condition: service_healthy
+      plato_test:
+        condition: service_completed_successfully
+    volumes:
+      - .:/app
+      - app_deps:/app/deps
+      - app_build:/app/_build
+    command: >
+      sh -c "
+        echo '=== Installing Hex and Rebar ===' &&
+        mix local.hex --force &&
+        mix local.rebar --force &&
+        echo '=== Getting dependencies ===' &&
+        mix deps.get &&
+        echo '=== Setting up demo app ===' &&
+        cd apps/plato_demo &&
         mix ecto.create &&
+        echo '=== Installing Plato migrations ===' &&
+        MIX_ENV=dev mix plato.install &&
+        echo '=== Running migrations ===' &&
         mix ecto.migrate &&
+        echo '=== Starting Phoenix server ===' &&
         mix phx.server
       "
 

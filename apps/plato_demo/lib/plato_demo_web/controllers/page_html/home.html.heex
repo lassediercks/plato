@@ -1,0 +1,121 @@
+<div class="mx-auto max-w-4xl px-4 py-12">
+  <!-- Site Header from CMS -->
+  <%= if @header do %>
+    <header class="mb-12 text-center">
+      <h1 class="text-4xl font-bold mb-2"><%= @header.logo_text %></h1>
+      <p class="text-xl text-gray-600"><%= @header.tagline %></p>
+    </header>
+  <% else %>
+    <header class="mb-12 text-center">
+      <h1 class="text-4xl font-bold mb-2">Plato CMS Demo</h1>
+      <p class="text-xl text-gray-600">Welcome to the umbrella example app!</p>
+    </header>
+  <% end %>
+
+  <!-- Admin Link -->
+  <div class="mb-12 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+    <h2 class="text-2xl font-semibold mb-4">🎯 Getting Started</h2>
+    <p class="mb-4">
+      This demo showcases Plato CMS integrated into a Phoenix application.
+      Content below is loaded from Plato CMS schemas defined in code.
+    </p>
+    <a
+      href="/admin/cms"
+      class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+    >
+      Open CMS Admin →
+    </a>
+  </div>
+
+  <!-- Homepage Hero from CMS -->
+  <%= if @homepage do %>
+    <section class="mb-12 p-8 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg">
+      <h2 class="text-3xl font-bold mb-4"><%= @homepage.hero_title %></h2>
+      <p class="text-lg mb-6"><%= @homepage.hero_subtitle %></p>
+      <%= if @homepage.cta_text && @homepage.cta_link do %>
+        <a
+          href={@homepage.cta_link}
+          class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+        >
+          <%= @homepage.cta_text %>
+        </a>
+      <% end %>
+    </section>
+  <% else %>
+    <section class="mb-12 p-8 bg-gray-100 rounded-lg">
+      <h2 class="text-2xl font-semibold mb-4">No homepage content yet</h2>
+      <p>
+        Go to <a href="/admin/cms" class="text-blue-600 hover:underline">the admin</a>
+        to create homepage content. The "homepage" schema is already defined in code!
+      </p>
+    </section>
+  <% end %>
+
+  <!-- Blog Posts from CMS -->
+  <section>
+    <h2 class="text-3xl font-bold mb-6">Blog Posts</h2>
+
+    <%= if Enum.empty?(@blog_posts) do %>
+      <div class="p-8 bg-gray-100 rounded-lg">
+        <p class="text-gray-600">
+          No blog posts yet. Create some in <a href="/admin/cms" class="text-blue-600 hover:underline">the admin</a>!
+        </p>
+        <p class="mt-4 text-sm text-gray-500">
+          💡 Tip: The "blog-post" and "author" schemas are already defined in code.
+          You can create authors first, then reference them in blog posts.
+        </p>
+      </div>
+    <% else %>
+      <div class="grid gap-6">
+        <%= for post <- @blog_posts do %>
+          <article class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition">
+            <h3 class="text-2xl font-semibold mb-2"><%= post.title %></h3>
+
+            <%= if post.excerpt do %>
+              <p class="text-gray-600 mb-4"><%= post.excerpt %></p>
+            <% end %>
+
+            <%= if post.author do %>
+              <div class="flex items-center text-sm text-gray-500">
+                <span>By <%= post.author.name %></span>
+                <%= if post.author.email do %>
+                  <span class="mx-2">•</span>
+                  <span><%= post.author.email %></span>
+                <% end %>
+              </div>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Code Example -->
+  <section class="mt-12 p-6 bg-gray-900 text-gray-100 rounded-lg">
+    <h3 class="text-xl font-semibold mb-4">📝 How this works</h3>
+    <p class="mb-4 text-gray-300">
+      Schemas are defined in <code class="bg-gray-800 px-2 py-1 rounded">lib/plato_demo/content_schemas.ex</code>:
+    </p>
+    <pre class="text-sm overflow-x-auto"><code>defmodule PlatoDemo.ContentSchemas do
+  use Plato.SchemaBuilder
+
+  schema "homepage", unique: true do
+    field :hero_title, :text
+    field :hero_subtitle, :text
+    field :cta_text, :text
+    field :cta_link, :text
+  end
+
+  schema "blog-post" do
+    field :title, :text
+    field :excerpt, :text
+    field :author, :reference, to: "author"
+  end
+end</code></pre>
+    <p class="mt-4 text-gray-300">
+      Content is queried in <code class="bg-gray-800 px-2 py-1 rounded">page_controller.ex</code>:
+    </p>
+    <pre class="text-sm overflow-x-auto mt-2"><code>Plato.get_content("homepage", otp_app: :plato_demo)
+Plato.list_content("blog-post", otp_app: :plato_demo)</code></pre>
+  </section>
+</div>

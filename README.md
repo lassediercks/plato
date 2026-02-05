@@ -12,6 +12,48 @@ A schema-driven headless CMS for Phoenix applications. Create dynamic content ty
 - **Mountable admin**: Admin UI can be mounted at any path in your router
 - **Multi-tenant ready**: Support for multiple Plato instances with different databases
 
+## Try the Demo
+
+This repository is an umbrella project. The demo app shows a complete integration.
+
+### With Docker (Easiest)
+
+```bash
+git clone https://github.com/lassediercks/plato.git
+cd plato
+docker-compose up
+```
+
+This will:
+1. Start PostgreSQL database
+2. Run Plato library tests (ensures everything works)
+3. Start the demo app (only if tests pass)
+
+Visit:
+- **Frontend with CMS content**: http://localhost:4500
+- **Admin UI**: http://localhost:4500/admin/cms
+
+### Without Docker
+
+```bash
+git clone https://github.com/lassediercks/plato.git
+cd plato
+mix deps.get
+
+# Setup database
+cd apps/plato_demo
+mix ecto.create
+mix ecto.migrate
+mix plato.install
+mix ecto.migrate
+
+# Start server
+cd ../..
+mix phx.server
+```
+
+See [apps/plato_demo/](apps/plato_demo/) for full documentation.
+
 ## Installation
 
 Add `plato` to your list of dependencies in `mix.exs`:
@@ -72,12 +114,78 @@ Now visit `/admin/cms` to manage your content schemas.
 
 ### Creating Schemas
 
-Use the admin UI to create schemas (content types). For example:
+You can create schemas in two ways:
 
-1. Create a "Homepage" schema with `unique: true`
-2. Add fields: "title" (text), "tagline" (text)
-3. Create a "Blog Post" schema
-4. Add fields: "title" (text), "body" (text), "author" (reference to another schema)
+#### 1. Via Admin UI
+
+Use the admin UI to create schemas dynamically:
+
+1. Visit `/admin/cms`
+2. Create a "Homepage" schema with `unique: true`
+3. Add fields: "title" (text), "tagline" (text)
+
+#### 2. Via Code (Recommended for production)
+
+Define schemas in your application code for version control and consistency:
+
+```elixir
+# lib/my_app/content_schemas.ex
+defmodule MyApp.ContentSchemas do
+  use Plato.SchemaBuilder
+
+  schema "login-header", unique: true do
+    field :title, :text
+    field :tagline, :text
+  end
+
+  schema "blog-post" do
+    field :title, :text
+    field :body, :text
+    field :author, :reference, to: "author"
+  end
+
+  schema "author" do
+    field :name, :text
+    field :bio, :text
+  end
+end
+```
+
+Then sync to database:
+
+```elixir
+# In application.ex start/2 callback
+def start(_type, _args) do
+  # ... supervisor setup ...
+
+  # Sync CMS schemas on app start
+  Plato.sync_schemas(MyApp.ContentSchemas, otp_app: :my_app)
+
+  # ... rest of start function ...
+end
+```
+
+Or in a migration:
+
+```elixir
+defmodule MyApp.Repo.Migrations.SyncCMSSchemas do
+  use Ecto.Migration
+
+  def up do
+    Plato.sync_schemas(MyApp.ContentSchemas, repo: MyApp.Repo)
+  end
+
+  def down do
+    # Schemas remain in database but can be manually deleted if needed
+  end
+end
+```
+
+**Benefits of code-defined schemas:**
+- Version controlled with your application
+- Can't be accidentally modified or deleted through UI
+- Automatically synced across environments
+- Content can still be managed through the admin UI
 
 ### Querying Content
 
@@ -175,9 +283,10 @@ end
 
 The admin interface provides:
 
-- **Schemas**: Create and manage content types
+- **Schemas**: Create and manage content types (via UI or code)
 - **Fields**: Add text fields and references to other schemas
 - **Content**: Create and edit content instances
+- **Code-managed schemas**: Define schemas in code (read-only in UI)
 - **Unique validation**: Prevent multiple instances of unique schemas
 - **Reference resolution**: Automatically resolve and display referenced content
 - **Field deletion**: Validate which content would be affected before deleting fields
@@ -186,12 +295,19 @@ The admin interface provides:
 
 ### Main Functions
 
+- `Plato.sync_schemas/2` - Sync code-defined schemas to database
 - `Plato.get_content/2` - Get unique content by schema name
 - `Plato.get_content!/2` - Get unique content, raises on error
 - `Plato.list_content/2` - List all content for a schema
 - `Plato.get_content_by_id/2` - Get content by database ID
 - `Plato.create_content/3` - Create new content
 - `Plato.update_content/3` - Update existing content
+
+### Schema Builder (DSL)
+
+- `use Plato.SchemaBuilder` - Import schema definition macros
+- `schema/2` - Define a schema with name and options
+- `field/3` - Define a field within a schema
 
 ### View Helpers
 

@@ -1,0 +1,37 @@
+# Ignore build artifacts
+_build/
+deps/
+*.ez
+
+# Ignore node modules if any
+node_modules/
+apps/*/node_modules/
+apps/*/assets/node_modules/
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore local config
+.env
+.env.local
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore test artifacts
+cover/
+doc/
+*.beam
+erl_crash.dump
+
+# Keep these for Docker build
+!mix.exs
+!mix.lock

@@ -17,7 +17,7 @@ RUN mix local.hex --force && \
 COPY . .
 
 # Expose port
-EXPOSE 4000
+EXPOSE 4500
 
-# Start command
-CMD ["mix", "run", "--no-halt"]
+# Start Phoenix server (umbrella app)
+CMD ["mix", "phx.server"]
