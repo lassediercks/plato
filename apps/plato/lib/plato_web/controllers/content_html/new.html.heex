@@ -25,7 +25,22 @@
               required
             />
           <% end %>
-        <% else %>
+        <% end %>
+
+        <%= if field.field_type == "richtext" do %>
+          <input
+            type="hidden"
+            id={"field_#{field.id}"}
+            name={"content[#{field.id}]"}
+            value=""
+          />
+          <trix-editor
+            input={"field_#{field.id}"}
+            placeholder={"Enter #{field.name}..."}
+          ></trix-editor>
+        <% end %>
+
+        <%= if field.field_type == "reference" do %>
           <select
             id={"field_#{field.id}"}
             name={"content[#{field.id}]"}

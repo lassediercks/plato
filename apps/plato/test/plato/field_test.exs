@@ -20,6 +20,17 @@ defmodule Plato.FieldTest do
       assert changeset.valid?
     end
 
+    test "valid changeset for richtext field", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "body",
+        field_type: "richtext"
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      assert changeset.valid?
+    end
+
     test "valid changeset for reference field with referenced_schema_id", %{schema: schema} do
       ref_schema = create_schema(%{name: "referenced"})
 
@@ -46,7 +57,7 @@ defmodule Plato.FieldTest do
       assert Ecto.Changeset.get_field(changeset, :field_type) == "text"
     end
 
-    test "validates field_type is text or reference", %{schema: schema} do
+    test "validates field_type is text, richtext, or reference", %{schema: schema} do
       changeset =
         Field.changeset(%Field{}, %{
           schema_id: schema.id,
@@ -83,6 +94,21 @@ defmodule Plato.FieldTest do
                errors_on(changeset)
     end
 
+    test "richtext field should not have referenced_schema_id", %{schema: schema} do
+      ref_schema = create_schema(%{name: "ref"})
+
+      changeset =
+        Field.changeset(%Field{}, %{
+          schema_id: schema.id,
+          name: "body",
+          field_type: "richtext",
+          referenced_schema_id: ref_schema.id
+        })
+
+      assert %{referenced_schema_id: ["should not be set for richtext fields"]} =
+               errors_on(changeset)
+    end
+
     test "defaults field_type to text", %{schema: schema} do
       changeset = Field.changeset(%Field{}, %{schema_id: schema.id, name: "test"})
       assert Ecto.Changeset.get_field(changeset, :field_type) == "text"
@@ -105,6 +131,20 @@ defmodule Plato.FieldTest do
       assert {:ok, field} = Field.create(attrs, Repo)
       assert field.name == "title"
       assert field.field_type == "text"
+      assert field.schema_id == schema.id
+      assert field.referenced_schema_id == nil
+    end
+
+    test "creates a richtext field", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "body",
+        field_type: "richtext"
+      }
+
+      assert {:ok, field} = Field.create(attrs, Repo)
+      assert field.name == "body"
+      assert field.field_type == "richtext"
       assert field.schema_id == schema.id
       assert field.referenced_schema_id == nil
     end
@@ -220,6 +260,14 @@ defmodule Plato.FieldTest do
       field = Repo.preload(field, :referenced_schema)
       assert field.referenced_schema == nil
     end
+
+    test "referenced_schema is nil for richtext fields" do
+      schema = create_schema(%{name: "test"})
+      field = create_field(schema, %{name: "body", field_type: "richtext"})
+
+      field = Repo.preload(field, :referenced_schema)
+      assert field.referenced_schema == nil
+    end
   end
 
   describe "database constraints" do
@@ -323,6 +371,37 @@ defmodule Plato.FieldTest do
 
       assert DateTime.compare(updated.updated_at, original_updated_at) == :gt
     end
+
+    test "can change field_type from text to richtext" do
+      schema = create_schema(%{name: "test"})
+      {:ok, field} = Field.create(%{schema_id: schema.id, name: "content", field_type: "text"}, Repo)
+
+      changeset = Field.changeset(field, %{field_type: "richtext"})
+      {:ok, updated} = Repo.update(changeset)
+
+      assert updated.field_type == "richtext"
+      assert updated.referenced_schema_id == nil
+    end
+
+    test "can change field_type from richtext to text" do
+      schema = create_schema(%{name: "test"})
+      {:ok, field} = Field.create(%{schema_id: schema.id, name: "content", field_type: "richtext"}, Repo)
+
+      changeset = Field.changeset(field, %{field_type: "text"})
+      {:ok, updated} = Repo.update(changeset)
+
+      assert updated.field_type == "text"
+      assert updated.referenced_schema_id == nil
+    end
+
+    test "cannot change field_type from richtext to reference without referenced_schema_id" do
+      schema = create_schema(%{name: "test"})
+      {:ok, field} = Field.create(%{schema_id: schema.id, name: "content", field_type: "richtext"}, Repo)
+
+      changeset = Field.changeset(field, %{field_type: "reference"})
+      assert {:error, changeset} = Repo.update(changeset)
+      assert %{referenced_schema_id: ["must be set for reference fields"]} = errors_on(changeset)
+    end
   end
 
   describe "field options" do
@@ -405,6 +484,43 @@ defmodule Plato.FieldTest do
 
       # Options should remain unchanged
       assert updated.options == %{"multiline" => true}
+    end
+
+    test "creates richtext field with empty options by default", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "body",
+        field_type: "richtext"
+      }
+
+      {:ok, field} = Field.create(attrs, Repo)
+      assert field.options == %{}
+    end
+
+    test "creates richtext field with custom options", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "content",
+        field_type: "richtext",
+        options: %{"toolbar" => "basic"}
+      }
+
+      {:ok, field} = Field.create(attrs, Repo)
+      assert field.options == %{"toolbar" => "basic"}
+    end
+
+    test "updates richtext field options", %{schema: schema} do
+      {:ok, field} = Field.create(%{
+        schema_id: schema.id,
+        name: "article",
+        field_type: "richtext",
+        options: %{}
+      }, Repo)
+
+      changeset = Field.changeset(field, %{options: %{"max_length" => 5000}})
+      {:ok, updated} = Repo.update(changeset)
+
+      assert updated.options == %{"max_length" => 5000}
     end
   end
 

@@ -62,6 +62,7 @@
           <select id="field_type" name="field[field_type]" required>
             <option value="">Select type...</option>
             <option value="text">Text Field</option>
+            <option value="richtext">Rich Text Field</option>
             <option value="reference">Schema Reference</option>
           </select>
         </div>
@@ -157,6 +158,9 @@
         if (this.value === 'text') {
           textGroup.style.display = 'block';
           textOptionsGroup.style.display = 'block';
+          nameInput.required = true;
+        } else if (this.value === 'richtext') {
+          textGroup.style.display = 'block';
           nameInput.required = true;
         } else if (this.value === 'reference') {
           refGroup.style.display = 'block';

@@ -29,7 +29,13 @@
           <span class="field-value">
             <%= if field.field_type == "text" do %>
               <%= Map.get(@content.field_values, to_string(field.id), "—") %>
-            <% else %>
+            <% end %>
+
+            <%= if field.field_type == "richtext" do %>
+              <%= raw(Map.get(@content.field_values, to_string(field.id), "—")) %>
+            <% end %>
+
+            <%= if field.field_type == "reference" do %>
               <% content_id = Map.get(@content.field_values, to_string(field.id)) %>
               <%= if content_id do %>
                 <% referenced_content = Enum.find(@all_contents, &(&1.id == String.to_integer(content_id))) %>

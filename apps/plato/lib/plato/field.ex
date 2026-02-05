@@ -29,7 +29,7 @@ defmodule Plato.Field do
     field
     |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options])
     |> validate_required([:schema_id, :name])
-    |> validate_inclusion(:field_type, ["text", "reference"])
+    |> validate_inclusion(:field_type, ["text", "richtext", "reference"])
     |> validate_options()
     |> validate_reference_schema()
     |> set_reference_name()
@@ -56,6 +56,9 @@ defmodule Plato.Field do
 
       "text" when not is_nil(referenced_schema_id) ->
         add_error(changeset, :referenced_schema_id, "should not be set for text fields")
+
+      "richtext" when not is_nil(referenced_schema_id) ->
+        add_error(changeset, :referenced_schema_id, "should not be set for richtext fields")
 
       _ ->
         changeset

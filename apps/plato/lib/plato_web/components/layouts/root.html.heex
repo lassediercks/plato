@@ -4,6 +4,8 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Plato - CMS</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
+    <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
     <style><%= raw """
 :root {
   --base-spacing: 3px;
@@ -676,6 +678,34 @@ a.btn-delete {
 
 .btn-danger:hover {
   background-color: #c82333;
+}
+
+/* Trix editor styles */
+trix-toolbar {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 10px;
+}
+
+trix-editor {
+  min-height: 250px;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 0 0 4px 4px;
+  padding: 10px;
+  background-color: white;
+}
+
+trix-editor:focus {
+  outline: none;
+  border-color: #4caf50;
+}
+
+trix-editor:empty:before {
+  color: #999;
 }
 """ %></style>
   </head>
