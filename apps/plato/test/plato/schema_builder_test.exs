@@ -330,6 +330,40 @@ defmodule Plato.SchemaBuilderTest do
     end
   end
 
+  describe "multiline field options" do
+    test "defines text field with multiline option" do
+      defmodule MultilineFields do
+        use Plato.SchemaBuilder
+
+        schema "post" do
+          field :title, :text
+          field :body, :text, multiline: true
+        end
+      end
+
+      schema = hd(MultilineFields.__plato_schemas__())
+      body_field = Enum.find(schema.fields, &(&1.name == "body"))
+
+      assert body_field.opts[:multiline] == true
+    end
+
+    test "combines multiline with other options" do
+      defmodule MultilineWithOtherOptions do
+        use Plato.SchemaBuilder
+
+        schema "article" do
+          field :description, :text, multiline: true, required: true
+        end
+      end
+
+      schema = hd(MultilineWithOtherOptions.__plato_schemas__())
+      field = hd(schema.fields)
+
+      assert field.opts[:multiline] == true
+      assert field.opts[:required] == true
+    end
+  end
+
   describe "real-world schema examples" do
     test "blog schema definition" do
       defmodule BlogSchemas do

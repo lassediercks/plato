@@ -100,9 +100,16 @@ defmodule Plato.SchemaBuilder do
     * `:text` - Text field
     * `:reference` - Reference to another schema (requires `to: "schema_name"` option)
 
+  ## Field Options
+
+    * `:multiline` - Render text field as textarea (default: false)
+    * `:to` - Referenced schema name (for reference fields only)
+
   ## Examples
 
       field :title, :text
+      field :body, :text, multiline: true
+      field :excerpt, :text, multiline: true
       field :author, :reference, to: "author"
   """
   defmacro field(name, type, opts \\ []) do

@@ -259,13 +259,13 @@ defmodule PlatoTest do
 
       schema "blog_post" do
         field :title, :text
-        field :body, :text
+        field :body, :text, multiline: true
         field :author, :reference, to: "author"
       end
 
       schema "author" do
         field :name, :text
-        field :bio, :text
+        field :bio, :text, multiline: true
       end
     end
 
@@ -335,6 +335,53 @@ defmodule PlatoTest do
 
       # Field should exist but reference might not be set
       assert category_field != nil
+    end
+
+    test "syncs field options correctly" do
+      assert :ok = Plato.sync_schemas(TestSchemas, repo: Repo)
+
+      blog_post = Repo.get_by(Schema, name: "blog_post") |> Repo.preload(:fields)
+      body_field = Enum.find(blog_post.fields, &(&1.name == "body"))
+
+      assert body_field.options == %{"multiline" => true}
+
+      author = Repo.get_by(Schema, name: "author") |> Repo.preload(:fields)
+      bio_field = Enum.find(author.fields, &(&1.name == "bio"))
+
+      assert bio_field.options == %{"multiline" => true}
+    end
+
+    test "updates field options on re-sync" do
+      defmodule InitialSchemas do
+        use Plato.SchemaBuilder
+
+        schema "article" do
+          field :content, :text
+        end
+      end
+
+      # First sync without multiline
+      assert :ok = Plato.sync_schemas(InitialSchemas, repo: Repo)
+
+      article = Repo.get_by(Schema, name: "article") |> Repo.preload(:fields)
+      content_field = Enum.find(article.fields, &(&1.name == "content"))
+      assert content_field.options == %{}
+
+      # Update schema definition to include multiline
+      defmodule UpdatedSchemas do
+        use Plato.SchemaBuilder
+
+        schema "article" do
+          field :content, :text, multiline: true
+        end
+      end
+
+      # Re-sync with multiline option
+      assert :ok = Plato.sync_schemas(UpdatedSchemas, repo: Repo)
+
+      article = Repo.get_by(Schema, name: "article") |> Repo.preload(:fields, force: true)
+      content_field = Enum.find(article.fields, &(&1.name == "content"))
+      assert content_field.options == %{"multiline" => true}
     end
   end
 

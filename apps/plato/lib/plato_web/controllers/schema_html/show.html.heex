@@ -76,6 +76,18 @@
           />
         </div>
 
+        <div class="form-group" id="text-options-group" style="display: none;">
+          <label style="display: flex; align-items: center; gap: 8px;">
+            <input
+              type="checkbox"
+              id="field_multiline"
+              name="field[multiline]"
+              value="true"
+            />
+            <span>Multiline (use textarea)</span>
+          </label>
+        </div>
+
         <div class="form-group" id="reference-schema-group" style="display: none;">
           <label for="referenced_schema_id">Select Schema:</label>
           <select id="referenced_schema_id" name="field[referenced_schema_id]">
@@ -114,6 +126,9 @@
                 <% else %>
                   <span class="field-name"><%= field.name %></span>
                   <span class="field-type"><%= field.field_type %></span>
+                  <%= if Map.get(field.options, "multiline") do %>
+                    <span class="badge" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.75rem; margin-left: 8px;">multiline</span>
+                  <% end %>
                 <% end %>
               </div>
               <%= if @schema.managed_by != "code" do %>
@@ -128,17 +143,20 @@
     <script>
       document.getElementById('field_type').addEventListener('change', function() {
         const textGroup = document.getElementById('text-field-group');
+        const textOptionsGroup = document.getElementById('text-options-group');
         const refGroup = document.getElementById('reference-schema-group');
         const nameInput = document.getElementById('field_name');
         const refSelect = document.getElementById('referenced_schema_id');
 
         textGroup.style.display = 'none';
+        textOptionsGroup.style.display = 'none';
         refGroup.style.display = 'none';
         nameInput.required = false;
         refSelect.required = false;
 
         if (this.value === 'text') {
           textGroup.style.display = 'block';
+          textOptionsGroup.style.display = 'block';
           nameInput.required = true;
         } else if (this.value === 'reference') {
           refGroup.style.display = 'block';

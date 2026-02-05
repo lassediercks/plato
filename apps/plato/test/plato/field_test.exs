@@ -325,6 +325,89 @@ defmodule Plato.FieldTest do
     end
   end
 
+  describe "field options" do
+    setup do
+      schema = create_schema(%{name: "test_schema"})
+      %{schema: schema}
+    end
+
+    test "creates field with empty options by default", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "title",
+        field_type: "text"
+      }
+
+      {:ok, field} = Field.create(attrs, Repo)
+      assert field.options == %{}
+    end
+
+    test "creates field with multiline option", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "body",
+        field_type: "text",
+        options: %{"multiline" => true}
+      }
+
+      {:ok, field} = Field.create(attrs, Repo)
+      assert field.options == %{"multiline" => true}
+    end
+
+    test "creates field with only multiline option", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "description",
+        field_type: "text",
+        options: %{"multiline" => true}
+      }
+
+      {:ok, field} = Field.create(attrs, Repo)
+      assert field.options == %{"multiline" => true}
+    end
+
+    test "updates field options", %{schema: schema} do
+      {:ok, field} = Field.create(%{
+        schema_id: schema.id,
+        name: "content",
+        field_type: "text",
+        options: %{}
+      }, Repo)
+
+      changeset = Field.changeset(field, %{options: %{"multiline" => true}})
+      {:ok, updated} = Repo.update(changeset)
+
+      assert updated.options == %{"multiline" => true}
+    end
+
+    test "validates options must be a map", %{schema: schema} do
+      changeset = Field.changeset(%Field{}, %{
+        schema_id: schema.id,
+        name: "test",
+        field_type: "text",
+        options: "invalid"
+      })
+
+      assert %{options: ["is invalid"]} = errors_on(changeset)
+    end
+
+    test "options persist across updates", %{schema: schema} do
+      {:ok, field} = Field.create(%{
+        schema_id: schema.id,
+        name: "content",
+        field_type: "text",
+        options: %{"multiline" => true}
+      }, Repo)
+
+      # Update name but not options
+      changeset = Field.changeset(field, %{name: "new_name"})
+      {:ok, updated} = Repo.update(changeset)
+
+      # Options should remain unchanged
+      assert updated.options == %{"multiline" => true}
+    end
+  end
+
   describe "complex reference scenarios" do
     test "self-referencing schema" do
       schema = create_schema(%{name: "category"})

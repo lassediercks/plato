@@ -9,6 +9,7 @@ A schema-driven headless CMS for Phoenix applications. Create dynamic content ty
 
 - **Schema-driven content**: Define content types dynamically through admin UI or code
 - **Field types**: Text fields and reference fields (relationships between content)
+- **Field options**: Multiline text fields with customizable textarea rows
 - **Unique schemas**: Mark schemas as singleton (only one content instance allowed)
 - **Clean API**: Query content by schema name with automatic field resolution
 - **View helpers**: Template-friendly functions for easy content rendering
@@ -23,7 +24,7 @@ Add `plato` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:plato, "~> 0.0.8"}
+    {:plato, "~> 0.0.9"}
   ]
 end
 ```
@@ -98,13 +99,14 @@ defmodule MyApp.ContentSchemas do
 
   schema "blog-post" do
     field :title, :text
-    field :body, :text
+    field :excerpt, :text, multiline: true
+    field :body, :text, multiline: true
     field :author, :reference, to: "author"
   end
 
   schema "author" do
     field :name, :text
-    field :bio, :text
+    field :bio, :text, multiline: true
   end
 end
 ```
@@ -196,6 +198,8 @@ Use in templates:
 - `use Plato.SchemaBuilder` - Import schema definition macros
 - `schema/2` - Define a schema with name and options
 - `field/3` - Define a field within a schema
+  - Field options for text fields:
+    - `multiline: true` - Render as textarea instead of input (100% width, 250px height)
 
 ### View Helpers
 
@@ -209,7 +213,9 @@ The admin interface provides:
 
 - **Schemas**: Create and manage content types
 - **Fields**: Add text fields and references to other schemas
+  - Text fields support multiline option for textarea rendering (100% width, 250px height)
 - **Content**: Create and edit content instances
+  - Multiline fields automatically render as textareas
 - **Code-managed schemas**: Read-only display for schemas defined in code
 - **Unique validation**: Prevent multiple instances of unique schemas
 - **Reference resolution**: Automatically resolve and display referenced content

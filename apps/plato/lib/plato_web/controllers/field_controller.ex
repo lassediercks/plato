@@ -7,6 +7,7 @@ defmodule PlatoWeb.FieldController do
       field_params
       |> Map.put("schema_id", schema_id)
       |> normalize_field_params()
+      |> extract_field_options()
 
     case Plato.Field.create(attrs, repo(conn)) do
       {:ok, field} ->
@@ -30,6 +31,26 @@ defmodule PlatoWeb.FieldController do
   end
 
   defp normalize_field_params(params), do: params
+
+  defp extract_field_options(%{"field_type" => "text"} = params) do
+    # Extract multiline option
+    options =
+      case Map.get(params, "multiline") do
+        "true" -> %{"multiline" => true}
+        "on" -> %{"multiline" => true}
+        _ -> %{}
+      end
+
+    # Remove temporary form fields and add options
+    params
+    |> Map.delete("multiline")
+    |> Map.put("options", options)
+  end
+
+  defp extract_field_options(params) do
+    # For non-text fields, just set empty options
+    Map.put(params, "options", %{})
+  end
 
   def delete_confirm(conn, %{"schema_id" => schema_id, "id" => field_id}) do
     schema = repo(conn).get(Plato.Schema, schema_id)

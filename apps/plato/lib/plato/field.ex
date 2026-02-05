@@ -8,6 +8,7 @@ defmodule Plato.Field do
           field_type: String.t(),
           schema_id: integer(),
           referenced_schema_id: integer() | nil,
+          options: map(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
@@ -15,6 +16,7 @@ defmodule Plato.Field do
   schema "fields" do
     field(:name, :string)
     field(:field_type, :string, default: "text")
+    field(:options, :map, default: %{})
     belongs_to(:schema, Plato.Schema)
     belongs_to(:referenced_schema, Plato.Schema)
     timestamps(type: :utc_datetime)
@@ -25,11 +27,18 @@ defmodule Plato.Field do
   """
   def changeset(field, attrs) do
     field
-    |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id])
+    |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options])
     |> validate_required([:schema_id, :name])
     |> validate_inclusion(:field_type, ["text", "reference"])
+    |> validate_options()
     |> validate_reference_schema()
     |> set_reference_name()
+  end
+
+  defp validate_options(changeset) do
+    # Ecto.Changeset.cast already validates that :map type is a map
+    # This function is here for any additional custom validations
+    changeset
   end
 
   defp validate_reference_schema(changeset) do

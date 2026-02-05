@@ -316,38 +316,72 @@ defmodule Plato do
 
     # Sync fields
     schema = repo.preload(schema, :fields)
-    existing_field_names = Enum.map(schema.fields, & &1.name) |> MapSet.new()
+    existing_fields_by_name = Map.new(schema.fields, &{&1.name, &1})
 
-    # Create new fields
+    # Create or update fields
     Enum.each(schema_def.fields, fn field_def ->
-      unless MapSet.member?(existing_field_names, field_def.name) do
-        field_attrs = %{
-          schema_id: schema.id,
-          name: field_def.name,
-          field_type: to_string(field_def.type)
-        }
+      field_options = extract_field_options(field_def.opts, field_def.type)
 
-        # Handle reference fields
-        field_attrs =
-          if field_def.type == :reference do
-            ref_schema_name = Keyword.get(field_def.opts, :to)
+      field_attrs = %{
+        schema_id: schema.id,
+        name: field_def.name,
+        field_type: to_string(field_def.type),
+        options: field_options
+      }
 
-            case repo.get_by(Schema, name: ref_schema_name) do
-              nil ->
-                # Referenced schema doesn't exist yet, will be created on next sync
-                field_attrs
+      # Handle reference fields
+      field_attrs =
+        if field_def.type == :reference do
+          ref_schema_name = Keyword.get(field_def.opts, :to)
 
-              ref_schema ->
-                Map.put(field_attrs, :referenced_schema_id, ref_schema.id)
-            end
-          else
-            field_attrs
+          case repo.get_by(Schema, name: ref_schema_name) do
+            nil ->
+              # Referenced schema doesn't exist yet, will be created on next sync
+              field_attrs
+
+            ref_schema ->
+              Map.put(field_attrs, :referenced_schema_id, ref_schema.id)
           end
+        else
+          field_attrs
+        end
 
-        Plato.Field.create(field_attrs, repo)
+      case Map.get(existing_fields_by_name, field_def.name) do
+        nil ->
+          # Create new field
+          Plato.Field.create(field_attrs, repo)
+
+        existing_field ->
+          # Update existing field if options changed
+          if existing_field.options != field_options or
+               (field_def.type == :reference and
+                  existing_field.referenced_schema_id != Map.get(field_attrs, :referenced_schema_id)) do
+            existing_field
+            |> Plato.Field.changeset(field_attrs)
+            |> repo.update()
+          end
       end
     end)
 
     :ok
+  end
+
+  defp extract_field_options(opts, field_type) do
+    case field_type do
+      :text ->
+        # Extract multiline option for text fields
+        if Keyword.has_key?(opts, :multiline) do
+          %{"multiline" => Keyword.get(opts, :multiline)}
+        else
+          %{}
+        end
+
+      :reference ->
+        # No special options for reference fields currently
+        %{}
+
+      _ ->
+        %{}
+    end
   end
 end

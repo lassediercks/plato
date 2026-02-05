@@ -10,12 +10,21 @@
         <label for={"field_#{field.id}"}><%= field.name %>:</label>
 
         <%= if field.field_type == "text" do %>
-          <input
-            type="text"
-            id={"field_#{field.id}"}
-            name={"content[#{field.id}]"}
-            required
-          />
+          <%= if Map.get(field.options, "multiline") do %>
+            <textarea
+              id={"field_#{field.id}"}
+              name={"content[#{field.id}]"}
+              style="width: 100%; height: 250px; resize: none;"
+              required
+            ></textarea>
+          <% else %>
+            <input
+              type="text"
+              id={"field_#{field.id}"}
+              name={"content[#{field.id}]"}
+              required
+            />
+          <% end %>
         <% else %>
           <select
             id={"field_#{field.id}"}
