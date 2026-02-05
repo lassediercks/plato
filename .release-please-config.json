@@ -1,0 +1,21 @@
+{
+  "release-type": "elixir",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "extra-files": [
+        {
+          "type": "elixir",
+          "path": "apps/plato/mix.exs",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "README.md",
+          "glob": false
+        }
+      ]
+    }
+  }
+}
