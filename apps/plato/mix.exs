@@ -4,7 +4,7 @@ defmodule Plato.MixProject do
   def project do
     [
       app: :plato,
-      version: "0.0.7",
+      version: "0.0.8",
       build_path: "../../_build",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
@@ -62,15 +62,15 @@ defmodule Plato.MixProject do
         "GitHub" => "https://github.com/lassediercks/plato"
       },
       maintainers: ["Lasse Diercks"],
-      files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE)
+      files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"],
-      source_ref: "v0.0.3",
+      extras: ["README.md", "CHANGELOG.md", "TESTING.md"],
+      source_ref: "v0.0.7",
       source_url: "https://github.com/lassediercks/plato"
     ]
   end

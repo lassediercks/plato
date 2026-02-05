@@ -2,6 +2,13 @@
 
 A schema-driven headless CMS for Phoenix applications. Create dynamic content types, manage relationships, and query content with a clean API. Includes a mountable admin UI for content management.
 
+## Repository Structure
+
+This is an **umbrella project** containing:
+
+- **`apps/plato`** - The Plato library (publishable to Hex)
+- **`apps/plato_demo`** - Demo Phoenix app showing complete integration
+
 ## Features
 
 - **Schema-driven content**: Define content types dynamically through the admin UI
@@ -12,11 +19,11 @@ A schema-driven headless CMS for Phoenix applications. Create dynamic content ty
 - **Mountable admin**: Admin UI can be mounted at any path in your router
 - **Multi-tenant ready**: Support for multiple Plato instances with different databases
 
-## Try the Demo
+## Development Setup
 
-This repository is an umbrella project. The demo app shows a complete integration.
+### With Docker (Recommended)
 
-### With Docker (Easiest)
+Run both the library tests and demo app:
 
 ```bash
 git clone https://github.com/lassediercks/plato.git
@@ -26,35 +33,49 @@ docker-compose up
 
 This will:
 1. Start PostgreSQL database
-2. Run Plato library tests (ensures everything works)
+2. Run Plato library tests (142 tests - ensures everything works)
 3. Start the demo app (only if tests pass)
 
 Visit:
-- **Frontend with CMS content**: http://localhost:4500
+- **Demo app with CMS content**: http://localhost:4500
 - **Admin UI**: http://localhost:4500/admin/cms
 
 ### Without Docker
 
-```bash
-git clone https://github.com/lassediercks/plato.git
-cd plato
-mix deps.get
+#### Run Library Tests
 
-# Setup database
+```bash
+cd apps/plato
+docker-compose -f docker-compose.test.yml up -d
+MIX_ENV=test mix ecto.create
+MIX_ENV=test mix ecto.migrate
+mix test
+```
+
+See [apps/plato/TESTING.md](apps/plato/TESTING.md) for details.
+
+#### Run Demo App
+
+```bash
 cd apps/plato_demo
+mix deps.get
 mix ecto.create
-mix ecto.migrate
 mix plato.install
 mix ecto.migrate
-
-# Start server
-cd ../..
 mix phx.server
 ```
 
-See [apps/plato_demo/](apps/plato_demo/) for full documentation.
+Visit http://localhost:4000 to see the demo.
 
-## Installation
+See [apps/plato_demo/README.md](apps/plato_demo/) for full documentation.
+
+## Using Plato in Your Project
+
+For complete installation and usage instructions, see the **[Plato library documentation](apps/plato/README.md)**.
+
+Quick start:
+
+### Installation
 
 Add `plato` to your list of dependencies in `mix.exs`:
 
