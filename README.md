@@ -82,7 +82,7 @@ Add `plato` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:plato, "~> 0.0.7"}
+    {:plato, "~> 0.0.7"} # x-release-please-version
   ]
 end
 ```
