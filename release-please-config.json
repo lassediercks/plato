@@ -5,16 +5,8 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "extra-files": [
-        {
-          "type": "elixir",
-          "path": "apps/plato/mix.exs",
-          "glob": false
-        },
-        {
-          "type": "generic",
-          "path": "README.md",
-          "glob": false
-        }
+        "apps/plato/mix.exs",
+        "README.md"
       ]
     }
   }
