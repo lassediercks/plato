@@ -25,6 +25,7 @@ Add `plato` to your list of dependencies in `mix.exs`:
 def deps do
   [
     {:plato, "~> 0.0.9"}
+      # x-release-please-version,
   ]
 end
 ```
