@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.15](https://github.com/lassediercks/plato/compare/v0.0.14...v0.0.15) (2026-02-06)
+
+
+### Bug Fixes
+
+* again path and css ([cde0830](https://github.com/lassediercks/plato/commit/cde083025516da03ed81bf46b6371fecab46353a))
+
 ## [0.0.14](https://github.com/lassediercks/plato/compare/v0.0.13...v0.0.14) (2026-02-06)
 
 
