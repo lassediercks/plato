@@ -48,8 +48,7 @@ defmodule Plato.MixProject do
       # Optional dependencies for image field support
       {:ex_aws, "~> 2.5", optional: true},
       {:ex_aws_s3, "~> 2.5", optional: true},
-      {:hackney, "~> 1.20", optional: true},
-      {:sweet_xml, "~> 0.7", optional: true}
+      {:hackney, "~> 1.20", optional: true}
     ]
   end
 

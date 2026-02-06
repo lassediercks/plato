@@ -58,7 +58,6 @@ defmodule PlatoDemo.MixProject do
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
       {:hackney, "~> 1.20"},
-      {:sweet_xml, "~> 0.7"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
        tag: "v2.2.0",
