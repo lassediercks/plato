@@ -44,7 +44,7 @@ defmodule Plato.MixProject do
       {:phoenix_live_view, "~> 1.1.22"},
       {:plug_cowboy, "~> 2.7"},
       {:jason, "~> 1.4"},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.34", only: :prod, runtime: false},
       # Optional dependencies for image field support
       {:ex_aws, "~> 2.5", optional: true},
       {:ex_aws_s3, "~> 2.5", optional: true},
