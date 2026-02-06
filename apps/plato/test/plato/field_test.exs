@@ -31,15 +31,24 @@ defmodule Plato.FieldTest do
       assert changeset.valid?
     end
 
-    test "valid changeset for image field", %{schema: schema} do
+    test "image field requires storage configuration", %{schema: schema} do
       attrs = %{
         schema_id: schema.id,
         name: "cover_image",
         field_type: "image"
       }
 
+      # Without otp_app, should fail
       changeset = Field.changeset(%Field{}, attrs)
-      assert changeset.valid?
+      refute changeset.valid?
+      assert %{field_type: [_]} = errors_on(changeset)
+
+      # With otp_app but no storage configured, should fail
+      changeset = Field.changeset(%Field{}, attrs, otp_app: :plato)
+      refute changeset.valid?
+      errors = errors_on(changeset)
+      assert errors[:field_type]
+      assert Enum.any?(errors[:field_type], &String.contains?(&1, "S3 storage configuration"))
     end
 
     test "valid changeset for reference field with referenced_schema_id", %{schema: schema} do
@@ -739,6 +748,102 @@ defmodule Plato.FieldTest do
       assert author_field.referenced_schema_id == user_schema.id
       assert editor_field.referenced_schema_id == user_schema.id
       assert author_field.name != editor_field.name
+    end
+  end
+
+  describe "image field validation" do
+    setup do
+      schema = create_schema(%{name: "test_schema"})
+      %{schema: schema}
+    end
+
+    test "image field without otp_app context fails", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "avatar",
+        field_type: "image"
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      refute changeset.valid?
+      errors = errors_on(changeset)
+      assert errors[:field_type]
+      assert Enum.any?(errors[:field_type], &String.contains?(&1, "otp_app"))
+    end
+
+    test "image field with unconfigured storage fails", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "photo",
+        field_type: "image"
+      }
+
+      # :plato app doesn't have storage configured in test environment
+      changeset = Field.changeset(%Field{}, attrs, otp_app: :plato)
+      refute changeset.valid?
+      errors = errors_on(changeset)
+      assert errors[:field_type]
+      assert Enum.any?(errors[:field_type], &String.contains?(&1, "S3 storage"))
+    end
+
+    test "text field doesn't require storage configuration", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "title",
+        field_type: "text"
+      }
+
+      # Text fields should work without otp_app or storage config
+      changeset = Field.changeset(%Field{}, attrs)
+      assert changeset.valid?
+
+      # Should also work with otp_app even if storage not configured
+      changeset = Field.changeset(%Field{}, attrs, otp_app: :plato)
+      assert changeset.valid?
+    end
+
+    test "richtext field doesn't require storage configuration", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "body",
+        field_type: "richtext"
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      assert changeset.valid?
+
+      changeset = Field.changeset(%Field{}, attrs, otp_app: :plato)
+      assert changeset.valid?
+    end
+
+    test "reference field doesn't require storage configuration", %{schema: schema} do
+      ref_schema = create_schema(%{name: "author"})
+
+      attrs = %{
+        schema_id: schema.id,
+        name: "author",
+        field_type: "reference",
+        referenced_schema_id: ref_schema.id
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      assert changeset.valid?
+
+      changeset = Field.changeset(%Field{}, attrs, otp_app: :plato)
+      assert changeset.valid?
+    end
+
+    test "Field.create passes validation through", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "upload",
+        field_type: "image"
+      }
+
+      # Should fail without otp_app
+      assert {:error, changeset} = Field.create(attrs, Repo)
+      errors = errors_on(changeset)
+      assert errors[:field_type]
     end
   end
 end
