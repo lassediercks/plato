@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.13](https://github.com/lassediercks/plato/compare/v0.0.12...v0.0.13) (2026-02-06)
+
+
+### Bug Fixes
+
+* seaweed path and readme version ([38e978d](https://github.com/lassediercks/plato/commit/38e978dba13bde17556c7ee430da88ed3ea87dee))
+
 ## [0.0.12](https://github.com/lassediercks/plato/compare/v0.0.11...v0.0.12) (2026-02-06)
 
 
