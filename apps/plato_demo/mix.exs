@@ -54,6 +54,11 @@ defmodule PlatoDemo.MixProject do
       {:lazy_html, ">= 0.1.0", only: :test},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
+      # S3 storage dependencies for image fields
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
+      {:hackney, "~> 1.20"},
+      {:sweet_xml, "~> 0.7"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
        tag: "v2.2.0",

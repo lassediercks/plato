@@ -88,3 +88,19 @@ config :plato_demo, PlatoDemo.Repo,
 if database_url = System.get_env("DATABASE_URL") do
   config :plato_demo, PlatoDemo.Repo, url: database_url
 end
+
+# Configure Plato storage (S3/SeaweedFS)
+config :plato_demo, :plato,
+  repo: PlatoDemo.Repo,
+  storage: [
+    adapter: Plato.Storage.S3Adapter,
+    bucket: System.get_env("S3_BUCKET") || "plato-uploads",
+    # Use localhost for browser-accessible URLs
+    endpoint: System.get_env("S3_ENDPOINT") || "http://localhost:8333",
+    # Internal endpoint for server-side operations (inside Docker)
+    internal_endpoint: System.get_env("S3_INTERNAL_ENDPOINT") || System.get_env("S3_ENDPOINT") || "http://seaweedfs:8333",
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID") || "any-key",
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY") || "any-secret",
+    region: System.get_env("AWS_REGION") || "us-east-1",
+    signed_url_expiry: 3600
+  ]

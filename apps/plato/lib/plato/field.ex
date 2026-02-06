@@ -32,7 +32,7 @@ defmodule Plato.Field do
     field
     |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options, :position])
     |> validate_required([:schema_id, :name])
-    |> validate_inclusion(:field_type, ["text", "richtext", "reference"])
+    |> validate_inclusion(:field_type, ["text", "richtext", "reference", "image"])
     |> validate_options()
     |> validate_reference_schema()
     |> set_reference_name()

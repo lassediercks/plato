@@ -8,7 +8,8 @@ A schema-driven headless CMS for Phoenix applications. Create dynamic content ty
 ## Features
 
 - **Schema-driven content**: Define content types dynamically through admin UI or code
-- **Field types**: Text fields and reference fields (relationships between content)
+- **Field types**: Text, rich text, images, and reference fields (relationships between content)
+- **Image uploads**: Upload and manage images with S3-compatible storage
 - **Field options**: Multiline text fields with customizable textarea rows
 - **Unique schemas**: Mark schemas as singleton (only one content instance allowed)
 - **Clean API**: Query content by schema name with automatic field resolution
@@ -38,6 +39,99 @@ mix deps.get
 mix plato.install
 mix ecto.migrate
 ```
+
+## S3 Configuration for Image Fields
+
+To use image fields, you need to configure S3-compatible storage. Plato supports AWS S3, SeaweedFS, MinIO, and other S3-compatible services.
+
+### Required Dependencies
+
+Add these dependencies to your `mix.exs` if you want to use image fields:
+
+```elixir
+def deps do
+  [
+    {:plato, "~> 0.0.10"},
+    # Required for image field support
+    {:ex_aws, "~> 2.5"},
+    {:ex_aws_s3, "~> 2.5"},
+    {:hackney, "~> 1.20"},
+    {:sweet_xml, "~> 0.7"}
+  ]
+end
+```
+
+### Storage Configuration
+
+Configure S3 storage in your `config/config.exs` or `config/runtime.exs`:
+
+```elixir
+# For AWS S3
+config :my_app, :plato,
+  repo: MyApp.Repo,
+  storage: [
+    adapter: Plato.Storage.S3Adapter,
+    bucket: "my-app-uploads",
+    region: "us-east-1",
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+    signed_url_expiry: 3600  # URL expiry in seconds
+  ]
+
+# For SeaweedFS (local development)
+config :my_app, :plato,
+  repo: MyApp.Repo,
+  storage: [
+    adapter: Plato.Storage.S3Adapter,
+    bucket: "plato-uploads",
+    endpoint: "http://localhost:8333",
+    internal_endpoint: "http://seaweedfs:8333",  # For Docker
+    access_key_id: "any-key",
+    secret_access_key: "any-secret",
+    region: "us-east-1"
+  ]
+```
+
+### SeaweedFS for Local Development
+
+SeaweedFS provides an S3-compatible API perfect for local development. Add it to your `docker-compose.yml`:
+
+```yaml
+services:
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    command: 'server -s3 -dir=/data'
+    ports:
+      - "8333:8333"  # S3 API
+      - "9333:9333"  # Master
+      - "8080:8080"  # Filer
+    volumes:
+      - seaweedfs_data:/data
+
+volumes:
+  seaweedfs_data:
+```
+
+Create the bucket on startup:
+
+```bash
+curl -X POST 'http://localhost:8080/buckets' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"plato-uploads"}'
+```
+
+### Configuration Options
+
+- `adapter` - Storage adapter module (required for image fields)
+- `bucket` - S3 bucket name (required)
+- `region` - AWS region (default: "us-east-1")
+- `endpoint` - Custom endpoint for S3-compatible services (optional)
+- `internal_endpoint` - Endpoint for server-side operations in Docker (optional)
+- `access_key_id` - AWS access key (optional, uses IAM if not provided)
+- `secret_access_key` - AWS secret key (optional)
+- `signed_url_expiry` - Signed URL expiration in seconds (default: 3600)
+
+**Note:** Image fields will only be available if storage is properly configured. Without S3 configuration, you can still use text, rich text, and reference fields.
 
 ## Quick Start
 
@@ -101,6 +195,7 @@ defmodule MyApp.ContentSchemas do
 
   schema "blog-post" do
     field :title, :text
+    field :cover_image, :image
     field :excerpt, :text, multiline: true
     field :body, :text, multiline: true
     field :author, :reference, to: "author"

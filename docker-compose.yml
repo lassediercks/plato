@@ -13,6 +13,16 @@ services:
       timeout: 5s
       retries: 5
 
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    command: 'server -s3 -dir=/data'
+    ports:
+      - "8333:8333"  # S3 API
+      - "9333:9333"  # Master
+      - "8080:8080"  # Filer
+    volumes:
+      - seaweedfs_data:/data
+
   plato_test:
     build:
       context: .
@@ -55,11 +65,20 @@ services:
       DATABASE_URL: "ecto://postgres:postgres@db:5432/plato_demo_dev"
       MIX_ENV: dev
       PORT: 4500
+      # S3/SeaweedFS Configuration
+      S3_ENDPOINT: "http://localhost:8333"  # For browser-accessible URLs
+      S3_INTERNAL_ENDPOINT: "http://seaweedfs:8333"  # For server-side operations
+      S3_BUCKET: "plato-uploads"
+      AWS_ACCESS_KEY_ID: "any-key"
+      AWS_SECRET_ACCESS_KEY: "any-secret"
+      AWS_REGION: "us-east-1"
     ports:
       - "4500:4500"
     depends_on:
       db:
         condition: service_healthy
+      seaweedfs:
+        condition: service_started
       plato_test:
         condition: service_completed_successfully
     volumes:
@@ -80,11 +99,17 @@ services:
         MIX_ENV=dev mix plato.install &&
         echo '=== Running migrations ===' &&
         mix ecto.migrate &&
+        echo '=== Waiting for SeaweedFS to be ready ===' &&
+        until curl -s http://seaweedfs:9333/cluster/status > /dev/null 2>&1; do echo 'Waiting for SeaweedFS master...'; sleep 2; done &&
+        sleep 5 &&
+        echo '=== Creating SeaweedFS bucket ===' &&
+        curl -X POST 'http://seaweedfs:8080/buckets' -H 'Content-Type: application/json' -d '{\"name\":\"plato-uploads\"}' || echo 'Bucket creation failed or already exists' &&
         echo '=== Starting Phoenix server ===' &&
         mix phx.server
       "
 
 volumes:
   postgres_data:
+  seaweedfs_data:
   app_deps:
   app_build:

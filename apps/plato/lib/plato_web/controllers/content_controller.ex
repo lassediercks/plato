@@ -76,7 +76,11 @@ defmodule PlatoWeb.ContentController do
     end
   end
 
-  def create(conn, %{"schema_id" => schema_id, "content" => content_params}) do
+  def create(conn, params) do
+    schema_id = Map.get(params, "schema_id")
+    content_params = Map.get(params, "content", %{})
+    content_files = Map.get(params, "content_files", %{})
+
     schema = repo(conn).get(Plato.Schema, schema_id)
 
     # Check if schema is unique and already has content
@@ -89,21 +93,37 @@ defmodule PlatoWeb.ContentController do
         |> put_flash(:error, "This schema is unique and already has content. You can only create one instance.")
         |> redirect(to: "#{base_path(conn)}/content")
       else
-        create_content(conn, schema_id, content_params)
+        create_content(conn, schema_id, content_params, content_files)
       end
     else
-      create_content(conn, schema_id, content_params)
+      create_content(conn, schema_id, content_params, content_files)
     end
   end
 
-  defp create_content(conn, schema_id, content_params) do
+  defp create_content(conn, schema_id, content_params, content_files) do
+    schema = repo(conn).get(Plato.Schema, schema_id) |> repo(conn).preload(:fields)
+    otp_app = conn.assigns[:plato_otp_app]
+
+    # Start with regular field values
     field_values =
       content_params
       |> Map.delete("schema_id")
       |> Enum.reduce(%{}, fn {key, value}, acc ->
-        # Convert field IDs to strings and store values
         Map.put(acc, key, value)
       end)
+
+    # Handle file uploads for image fields
+    field_values =
+      case handle_image_uploads(content_files, schema, otp_app) do
+        {:ok, image_values} -> Map.merge(field_values, image_values)
+        {:error, reason} ->
+          conn
+          |> put_flash(:error, "Image upload failed: #{reason}")
+          |> redirect(to: "#{base_path(conn)}/content/new?schema_id=#{schema_id}")
+          |> halt()
+
+          field_values
+      end
 
     attrs = %{
       schema_id: schema_id,
@@ -121,6 +141,70 @@ defmodule PlatoWeb.ContentController do
         |> put_flash(:error, "Failed to create content")
         |> redirect(to: "#{base_path(conn)}/content/new?schema_id=#{schema_id}")
     end
+  end
+
+  defp handle_image_uploads(content_files, schema, otp_app) do
+    storage_config = Plato.Storage.Config.get(otp_app)
+
+    if Enum.empty?(content_files) do
+      {:ok, %{}}
+    else
+      # Get image fields from schema
+      image_fields = Enum.filter(schema.fields, fn field -> field.field_type == "image" end)
+
+      # Process each uploaded file
+      image_values =
+        Enum.reduce_while(content_files, %{}, fn {field_id, upload}, acc ->
+          field = Enum.find(image_fields, fn f -> to_string(f.id) == field_id end)
+
+          if field && upload && upload.path do
+            # Generate storage path
+            storage_path = generate_storage_path(otp_app, schema.name, field.name, upload.filename)
+
+            # Get adapter and upload file
+            adapter = Keyword.get(storage_config, :adapter)
+
+            case adapter.put(upload, storage_path, storage_config) do
+              {:ok, _path} ->
+                # Generate signed URL
+                case adapter.get_url(storage_path, storage_config) do
+                  {:ok, url} ->
+                    # Store image metadata
+                    image_data = %{
+                      "url" => url,
+                      "storage_path" => storage_path,
+                      "filename" => upload.filename,
+                      "content_type" => upload.content_type,
+                      "size_bytes" => File.stat!(upload.path).size
+                    }
+
+                    {:cont, Map.put(acc, field_id, image_data)}
+
+                  {:error, reason} ->
+                    {:halt, {:error, "Failed to generate URL: #{inspect(reason)}"}}
+                end
+
+              {:error, reason} ->
+                {:halt, {:error, "Failed to upload file: #{inspect(reason)}"}}
+            end
+          else
+            {:cont, acc}
+          end
+        end)
+
+      case image_values do
+        {:error, _} = error -> error
+        values -> {:ok, values}
+      end
+    end
+  end
+
+  defp generate_storage_path(otp_app, schema_name, field_name, filename) do
+    timestamp = System.system_time(:second)
+    random = :crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower)
+    safe_filename = String.replace(filename, ~r/[^a-zA-Z0-9._-]/, "_")
+
+    "#{otp_app}/#{schema_name}/#{field_name}/#{timestamp}_#{random}_#{safe_filename}"
   end
 
   def show(conn, %{"id" => id}) do
@@ -153,7 +237,11 @@ defmodule PlatoWeb.ContentController do
     end
   end
 
-  def update(conn, %{"id" => id, "content" => content_params}) do
+  def update(conn, params) do
+    id = Map.get(params, "id")
+    content_params = Map.get(params, "content", %{})
+    content_files = Map.get(params, "content_files", %{})
+
     case repo(conn).get(Plato.Content, id) do
       nil ->
         conn
@@ -161,12 +249,33 @@ defmodule PlatoWeb.ContentController do
         |> redirect(to: "#{base_path(conn)}/content")
 
       content ->
+        content = repo(conn).preload(content, [:schema])
+        schema = repo(conn).preload(content.schema, :fields)
+        otp_app = conn.assigns[:plato_otp_app]
+
+        # Start with existing field values
+        field_values = content.field_values || %{}
+
+        # Merge in updated text/reference field values
         field_values =
           content_params
           |> Map.delete("schema_id")
-          |> Enum.reduce(%{}, fn {key, value}, acc ->
+          |> Enum.reduce(field_values, fn {key, value}, acc ->
             Map.put(acc, key, value)
           end)
+
+        # Handle new image uploads
+        field_values =
+          case handle_image_uploads(content_files, schema, otp_app) do
+            {:ok, image_values} -> Map.merge(field_values, image_values)
+            {:error, reason} ->
+              conn
+              |> put_flash(:error, "Image upload failed: #{reason}")
+              |> redirect(to: "#{base_path(conn)}/content/#{id}/edit")
+              |> halt()
+
+              field_values
+          end
 
         attrs = %{field_values: field_values}
 

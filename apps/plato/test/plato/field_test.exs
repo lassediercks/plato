@@ -31,6 +31,17 @@ defmodule Plato.FieldTest do
       assert changeset.valid?
     end
 
+    test "valid changeset for image field", %{schema: schema} do
+      attrs = %{
+        schema_id: schema.id,
+        name: "cover_image",
+        field_type: "image"
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      assert changeset.valid?
+    end
+
     test "valid changeset for reference field with referenced_schema_id", %{schema: schema} do
       ref_schema = create_schema(%{name: "referenced"})
 
@@ -57,7 +68,7 @@ defmodule Plato.FieldTest do
       assert Ecto.Changeset.get_field(changeset, :field_type) == "text"
     end
 
-    test "validates field_type is text, richtext, or reference", %{schema: schema} do
+    test "validates field_type is text, richtext, image, or reference", %{schema: schema} do
       changeset =
         Field.changeset(%Field{}, %{
           schema_id: schema.id,

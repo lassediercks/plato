@@ -1,7 +1,7 @@
 <div class="container">
   <h1>Create <%= @schema.name %></h1>
 
-  <form action={"#{@base_path}/content"} method="post" class="content-form">
+  <form action={"#{@base_path}/content"} method="post" class="content-form" enctype="multipart/form-data">
     <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
     <input type="hidden" name="schema_id" value={@schema.id} />
 
@@ -38,6 +38,17 @@
             input={"field_#{field.id}"}
             placeholder={"Enter #{field.name}..."}
           ></trix-editor>
+        <% end %>
+
+        <%= if field.field_type == "image" do %>
+          <input
+            type="file"
+            id={"field_#{field.id}"}
+            name={"content_files[#{field.id}]"}
+            accept="image/*"
+            required
+          />
+          <small style="color: #666; font-size: 0.875rem;">Upload an image file</small>
         <% end %>
 
         <%= if field.field_type == "reference" do %>

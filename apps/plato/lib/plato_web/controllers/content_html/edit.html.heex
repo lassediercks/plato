@@ -1,7 +1,7 @@
 <div class="container">
   <h1>Edit <%= @content.schema.name %> #<%= @content.id %></h1>
 
-  <form action={"#{@base_path}/content/#{@content.id}/update"} method="post" >
+  <form action={"#{@base_path}/content/#{@content.id}/update"} method="post" enctype="multipart/form-data">
     <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
     <%= for field <- @content.schema.fields do %>
       <div class="form-group">
@@ -37,6 +37,35 @@
             input={"field_#{field.id}"}
             placeholder={"Enter #{field.name}..."}
           ></trix-editor>
+        <% end %>
+
+        <%= if field.field_type == "image" do %>
+          <% existing_image = Map.get(@content.field_values, to_string(field.id)) %>
+          <%= if existing_image && is_map(existing_image) && Map.get(existing_image, "url") do %>
+            <div style="margin-bottom: 12px; padding: 12px; background: #f5f5f5; border-radius: 4px;">
+              <div style="margin-bottom: 8px;"><strong>Current image:</strong></div>
+              <img
+                src={Map.get(existing_image, "url")}
+                alt={Map.get(existing_image, "filename", "Current image")}
+                style="max-width: 300px; max-height: 200px; border-radius: 4px; margin-bottom: 8px;"
+              />
+              <div style="font-size: 0.875rem; color: #666;">
+                <div><%= Map.get(existing_image, "filename", "Unknown") %></div>
+                <%= if Map.get(existing_image, "size_bytes") do %>
+                  <div><%= Float.round(Map.get(existing_image, "size_bytes") / 1024, 1) %> KB</div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+          <input
+            type="file"
+            id={"field_#{field.id}"}
+            name={"content_files[#{field.id}]"}
+            accept="image/*"
+          />
+          <small style="color: #666; font-size: 0.875rem;">
+            <%= if existing_image, do: "Upload a new image to replace the current one", else: "Upload an image file" %>
+          </small>
         <% end %>
 
         <%= if field.field_type == "reference" do %>

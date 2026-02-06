@@ -63,6 +63,7 @@
             <option value="">Select type...</option>
             <option value="text">Text Field</option>
             <option value="richtext">Rich Text Field</option>
+            <option value="image">Image</option>
             <option value="reference">Schema Reference</option>
           </select>
         </div>
@@ -171,6 +172,9 @@
             textOptionsGroup.style.display = 'block';
             nameInput.required = true;
           } else if (this.value === 'richtext') {
+            textGroup.style.display = 'block';
+            nameInput.required = true;
+          } else if (this.value === 'image') {
             textGroup.style.display = 'block';
             nameInput.required = true;
           } else if (this.value === 'reference') {

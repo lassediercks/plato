@@ -35,6 +35,27 @@
               <%= raw(Map.get(@content.field_values, to_string(field.id), "—")) %>
             <% end %>
 
+            <%= if field.field_type == "image" do %>
+              <% image_data = Map.get(@content.field_values, to_string(field.id)) %>
+              <%= if image_data && is_map(image_data) && Map.get(image_data, "url") do %>
+                <div style="margin-top: 8px;">
+                  <img
+                    src={Map.get(image_data, "url")}
+                    alt={Map.get(image_data, "filename", "Uploaded image")}
+                    style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                  />
+                  <div style="margin-top: 8px; font-size: 0.875rem; color: #666;">
+                    <div><strong>Filename:</strong> <%= Map.get(image_data, "filename", "Unknown") %></div>
+                    <%= if Map.get(image_data, "size_bytes") do %>
+                      <div><strong>Size:</strong> <%= Float.round(Map.get(image_data, "size_bytes") / 1024, 1) %> KB</div>
+                    <% end %>
+                  </div>
+                </div>
+              <% else %>
+                —
+              <% end %>
+            <% end %>
+
             <%= if field.field_type == "reference" do %>
               <% content_id = Map.get(@content.field_values, to_string(field.id)) %>
               <%= if content_id do %>
