@@ -5,7 +5,7 @@ defmodule Plato.MixProject do
     [
       app: :plato,
       # x-release-please-start-version
-      version: "0.0.13",
+      version: "0.0.14",
       # x-release-please-end
       build_path: "../../_build",
       deps_path: "../../deps",
@@ -77,7 +77,7 @@ defmodule Plato.MixProject do
       main: "readme",
       extras: ["README.md", "CHANGELOG.md"],
       # x-release-please-start-version
-      source_ref: "v0.0.13",
+      source_ref: "v0.0.14",
       # x-release-please-end
       source_url: "https://github.com/lassediercks/plato"
     ]
