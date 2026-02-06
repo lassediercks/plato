@@ -25,7 +25,7 @@ defmodule PlatoDemoWeb.Router do
   # Mount Plato CMS admin
   scope "/" do
     pipe_through(:browser)
-    plato_admin("/testpath/contenms", otp_app: :plato_demo)
+    plato_admin("/admin/cms", otp_app: :plato_demo)
   end
 
   # Other scopes may use custom stacks.

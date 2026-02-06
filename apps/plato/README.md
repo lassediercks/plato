@@ -135,6 +135,24 @@ curl -X POST 'http://localhost:8080/buckets' \
 
 **Note:** Image fields will only be available if storage is properly configured. Without S3 configuration, you can still use text, rich text, and reference fields.
 
+### Upload Size Limits
+
+For large image uploads, you need to configure the parser limit in your endpoint:
+
+```elixir
+# lib/my_app_web/endpoint.ex
+plug Plug.Parsers,
+  parsers: [:urlencoded, :multipart, :json],
+  pass: ["*/*"],
+  json_decoder: Phoenix.json_library(),
+  length: 100_000_000  # 100MB limit (default is 8MB)
+```
+
+The `length` option sets the maximum request body size in bytes. Adjust based on your needs:
+- `10_000_000` - 10MB
+- `50_000_000` - 50MB
+- `100_000_000` - 100MB
+
 ## Quick Start
 
 ### 1. Configure

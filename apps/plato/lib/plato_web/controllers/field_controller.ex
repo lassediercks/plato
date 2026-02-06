@@ -9,15 +9,21 @@ defmodule PlatoWeb.FieldController do
       |> normalize_field_params()
       |> extract_field_options()
 
-    case Plato.Field.create(attrs, repo(conn)) do
+    case Plato.Field.create(attrs, repo(conn), otp_app: otp_app(conn)) do
       {:ok, field} ->
         conn
         |> put_flash(:info, "Field '#{field.name}' added successfully!")
         |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
 
-      {:error, _changeset} ->
+      {:error, changeset} ->
+        error_message =
+          case changeset.errors[:field_type] do
+            {msg, _} -> msg
+            nil -> "Failed to add field"
+          end
+
         conn
-        |> put_flash(:error, "Failed to add field")
+        |> put_flash(:error, error_message)
         |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
     end
   end
@@ -30,7 +36,7 @@ defmodule PlatoWeb.FieldController do
         nil -> :ok
         field ->
           field
-          |> Plato.Field.changeset(%{position: position})
+          |> Plato.Field.changeset(%{position: position}, otp_app: otp_app(conn))
           |> repo(conn).update()
       end
     end)
@@ -85,16 +91,22 @@ defmodule PlatoWeb.FieldController do
           |> extract_field_options_for_update(field)
 
         case field
-             |> Plato.Field.changeset(attrs)
+             |> Plato.Field.changeset(attrs, otp_app: otp_app(conn))
              |> repo(conn).update() do
           {:ok, _field} ->
             conn
             |> put_flash(:info, "Field updated successfully!")
             |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}")
 
-          {:error, _changeset} ->
+          {:error, changeset} ->
+            error_message =
+              case changeset.errors[:field_type] do
+                {msg, _} -> msg
+                nil -> "Failed to update field"
+              end
+
             conn
-            |> put_flash(:error, "Failed to update field")
+            |> put_flash(:error, error_message)
             |> redirect(to: "#{base_path(conn)}/schemas/#{schema_id}/fields/#{field_id}/edit")
         end
     end
@@ -247,11 +259,12 @@ defmodule PlatoWeb.FieldController do
     end
   end
 
+  # Private helper to get otp_app from conn assigns
+  defp otp_app(conn), do: conn.assigns[:plato_otp_app] || :plato
+
   # Private helper to get repo from conn assigns
   defp repo(conn) do
-    otp_app = conn.assigns[:plato_otp_app] || :plato
-
-    otp_app
+    otp_app(conn)
     |> Application.get_env(:plato, [])
     |> Keyword.get(:repo, Plato.Repo)
   end
