@@ -19,7 +19,8 @@ services:
     ports:
       - "8333:8333"  # S3 API
       - "9333:9333"  # Master
-      - "8080:8080"  # Filer
+      - "8888:8888"  # Filer
+      - "8080:8080"  # Volume
     volumes:
       - seaweedfs_data:/data
 

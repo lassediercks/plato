@@ -51,7 +51,10 @@ Add these dependencies to your `mix.exs` if you want to use image fields:
 ```elixir
 def deps do
   [
+    # x-release-please-start-version
     {:plato, "~> 0.0.10"},
+    # x-release-please-end
+
     # Required for image field support
     {:ex_aws, "~> 2.5"},
     {:ex_aws_s3, "~> 2.5"},
@@ -100,11 +103,11 @@ SeaweedFS provides an S3-compatible API perfect for local development. Add it to
 services:
   seaweedfs:
     image: chrislusf/seaweedfs:latest
-    command: 'server -s3 -dir=/data'
+    command: "server -s3 -dir=/data"
     ports:
-      - "8333:8333"  # S3 API
-      - "9333:9333"  # Master
-      - "8080:8080"  # Filer
+      - "8333:8333" # S3 API
+      - "9333:9333" # Master
+      - "8080:8080" # Filer
     volumes:
       - seaweedfs_data:/data
 
