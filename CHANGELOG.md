@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.16](https://github.com/lassediercks/plato/compare/v0.0.15...v0.0.16) (2026-02-06)
+
+
+### Bug Fixes
+
+* safeguard image usage, add image limit ([4dbffae](https://github.com/lassediercks/plato/commit/4dbffaed1622d84d3aea7ba0093de2659bb6ff7f))
+* storage and field sanity ([2b4d712](https://github.com/lassediercks/plato/commit/2b4d71236b04506a5cb113fe94a51d186d9113bc))
+
 ## [0.0.15](https://github.com/lassediercks/plato/compare/v0.0.14...v0.0.15) (2026-02-06)
 
 
