@@ -32,11 +32,13 @@ docker-compose up
 ```
 
 This will:
+
 1. Start PostgreSQL database
 2. Run Plato library tests (142 tests - ensures everything works)
 3. Start the demo app (only if tests pass)
 
 Visit:
+
 - **Demo app with CMS content**: http://localhost:4500
 - **Admin UI**: http://localhost:4500/admin/cms
 
@@ -203,6 +205,7 @@ end
 ```
 
 **Benefits of code-defined schemas:**
+
 - Version controlled with your application
 - Can't be accidentally modified or deleted through UI
 - Automatically synced across environments
@@ -345,7 +348,3 @@ docker-compose up
 ```
 
 Visit `http://localhost:4500` to see the application.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.

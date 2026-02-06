@@ -125,12 +125,14 @@ curl -X POST 'http://localhost:8080/buckets' \
 ### Configuration Options
 
 **Required:**
+
 - `adapter` - Storage adapter module (e.g., `Plato.Storage.S3Adapter`)
 - `bucket` - S3 bucket name
 - `access_key_id` - AWS/S3 access key ID
 - `secret_access_key` - AWS/S3 secret access key
 
 **Optional:**
+
 - `region` - AWS region (default: "us-east-1")
 - `endpoint` - Custom endpoint for S3-compatible services (e.g., SeaweedFS, MinIO)
 - `internal_endpoint` - Endpoint for server-side operations in Docker
@@ -152,6 +154,7 @@ plug Plug.Parsers,
 ```
 
 The `length` option sets the maximum request body size in bytes. Adjust based on your needs:
+
 - `10_000_000` - 10MB
 - `50_000_000` - 50MB
 - `100_000_000` - 100MB
@@ -357,15 +360,9 @@ MIX_ENV=test mix ecto.migrate
 mix test
 ```
 
-See [TESTING.md](TESTING.md) for more details.
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
 
 ## Links
 
