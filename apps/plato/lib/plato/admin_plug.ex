@@ -16,9 +16,9 @@ defmodule Plato.AdminPlug do
             plato_admin "/admin/cms", otp_app: :my_app
         """
 
-    # Calculate the full base path by combining script_name (outer scopes)
-    # with the path from opts (the plato_admin path)
-    base_path = compute_base_path(conn, opts[:base_path] || "/")
+    # Calculate the full base path from script_name
+    # script_name contains all consumed path segments including the plato_admin path
+    base_path = compute_base_path(conn)
 
     # Serve static assets first
     conn = serve_static(conn)
@@ -35,16 +35,12 @@ defmodule Plato.AdminPlug do
     end
   end
 
-  # Compute the full base path including outer scopes
-  defp compute_base_path(conn, relative_path) do
-    # script_name contains the path segments consumed by outer scopes
-    script_name = Enum.join(conn.script_name, "/")
-
-    # Combine script_name with the relative path
-    case {script_name, relative_path} do
-      {"", path} -> path
-      {script, "/"} -> "/#{script}"
-      {script, path} -> "/#{script}#{path}"
+  # Compute the full base path from script_name
+  # script_name contains all path segments consumed by scopes (e.g., ["dev", "cms"])
+  defp compute_base_path(conn) do
+    case conn.script_name do
+      [] -> "/"
+      segments -> "/" <> Enum.join(segments, "/")
     end
   end
 
