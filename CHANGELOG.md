@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.12](https://github.com/lassediercks/plato/compare/v0.0.11...v0.0.12) (2026-02-06)
+
+
+### Features
+
+* introduce image fields with s3 compatibility ([345a831](https://github.com/lassediercks/plato/commit/345a831d2cf4cb91688ed93489f04b06199ebb0f))
+
 ## [0.0.11](https://github.com/lassediercks/plato/compare/v0.0.10...v0.0.11) (2026-02-05)
 
 
