@@ -86,7 +86,7 @@ defmodule Plato.Field do
           add_error(
             changeset,
             :field_type,
-            "image fields require S3 storage configuration. Please configure storage in your config file and install required dependencies (ex_aws, ex_aws_s3, hackney)"
+            "image fields require S3 storage configuration. Please configure adapter, bucket, access_key_id, and secret_access_key in your config file, and install required dependencies (ex_aws, ex_aws_s3, hackney)"
           )
 
         not storage_dependencies_available?() ->

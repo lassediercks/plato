@@ -626,7 +626,7 @@ defmodule Plato.FieldTest do
 
     test "reordering fields updates positions correctly", %{schema: schema} do
       {:ok, field1} = Field.create(%{schema_id: schema.id, name: "field1", field_type: "text"}, Repo)
-      {:ok, field2} = Field.create(%{schema_id: schema.id, name: "field2", field_type: "text"}, Repo)
+      {:ok, _field2} = Field.create(%{schema_id: schema.id, name: "field2", field_type: "text"}, Repo)
       {:ok, field3} = Field.create(%{schema_id: schema.id, name: "field3", field_type: "text"}, Repo)
 
       # Swap positions of field1 and field3

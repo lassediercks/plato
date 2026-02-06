@@ -124,13 +124,16 @@ curl -X POST 'http://localhost:8080/buckets' \
 
 ### Configuration Options
 
-- `adapter` - Storage adapter module (required for image fields)
-- `bucket` - S3 bucket name (required)
+**Required:**
+- `adapter` - Storage adapter module (e.g., `Plato.Storage.S3Adapter`)
+- `bucket` - S3 bucket name
+- `access_key_id` - AWS/S3 access key ID
+- `secret_access_key` - AWS/S3 secret access key
+
+**Optional:**
 - `region` - AWS region (default: "us-east-1")
-- `endpoint` - Custom endpoint for S3-compatible services (optional)
-- `internal_endpoint` - Endpoint for server-side operations in Docker (optional)
-- `access_key_id` - AWS access key (optional, uses IAM if not provided)
-- `secret_access_key` - AWS secret key (optional)
+- `endpoint` - Custom endpoint for S3-compatible services (e.g., SeaweedFS, MinIO)
+- `internal_endpoint` - Endpoint for server-side operations in Docker
 - `signed_url_expiry` - Signed URL expiration in seconds (default: 3600)
 
 **Note:** Image fields will only be available if storage is properly configured. Without S3 configuration, you can still use text, rich text, and reference fields.

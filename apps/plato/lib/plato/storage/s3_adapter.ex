@@ -88,12 +88,12 @@ defmodule Plato.Storage.S3Adapter do
 
   # Private helpers
 
-  defp ex_aws_request(operation, config, endpoint_type \\ :internal) do
+  defp ex_aws_request(operation, config, endpoint_type) do
     config_opts = build_ex_aws_config(config, endpoint_type)
     ExAws.request(operation, config_opts)
   end
 
-  defp build_ex_aws_config(config, endpoint_type \\ :external) do
+  defp build_ex_aws_config(config, endpoint_type) do
     base_config = [
       access_key_id: Keyword.get(config, :access_key_id),
       secret_access_key: Keyword.get(config, :secret_access_key),

@@ -17,11 +17,26 @@ defmodule Plato.Storage.Config do
   @doc """
   Check if storage is properly configured for an otp_app.
 
-  Returns true if both adapter and bucket are configured.
+  Returns true if adapter, bucket, and credentials are configured.
+  For S3, requires access_key_id and secret_access_key.
   """
   def configured?(otp_app) do
     config = get(otp_app)
-    Keyword.has_key?(config, :adapter) && Keyword.has_key?(config, :bucket)
+
+    has_adapter? = Keyword.has_key?(config, :adapter)
+    has_bucket? = Keyword.has_key?(config, :bucket)
+    has_credentials? = has_required_credentials?(config)
+
+    has_adapter? && has_bucket? && has_credentials?
+  end
+
+  # Check if required credentials are present
+  # Both access_key_id and secret_access_key must be non-nil
+  defp has_required_credentials?(config) do
+    access_key = Keyword.get(config, :access_key_id)
+    secret_key = Keyword.get(config, :secret_access_key)
+
+    not is_nil(access_key) && not is_nil(secret_key)
   end
 
   @doc """
