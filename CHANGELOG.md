@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.17](https://github.com/lassediercks/plato/compare/v0.0.16...v0.0.17) (2026-02-06)
+
+
+### Bug Fixes
+
+* docs publishing ([8c02c03](https://github.com/lassediercks/plato/commit/8c02c039f4d055e24d489d16ed05d0c7b006d909))
+
 ## [0.0.16](https://github.com/lassediercks/plato/compare/v0.0.15...v0.0.16) (2026-02-06)
 
 
