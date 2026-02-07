@@ -60,6 +60,10 @@ jobs:
       - name: Run tests with coverage
         env:
           MIX_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         run: mix coveralls.lcov
 
       - name: Upload coverage to Codecov
