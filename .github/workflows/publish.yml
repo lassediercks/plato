@@ -20,6 +20,5 @@ jobs:
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
         run: |
-          cd apps/plato
           mix deps.get
           mix hex.publish --yes

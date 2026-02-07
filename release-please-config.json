@@ -7,11 +7,11 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "apps/plato/mix.exs"
+          "path": "mix.exs"
         },
         {
           "type": "generic",
-          "path": "apps/plato/README.md"
+          "path": "README.md"
         }
       ]
     }

@@ -19,5 +19,5 @@ COPY . .
 # Expose port
 EXPOSE 4500
 
-# Start Phoenix server (umbrella app)
-CMD ["mix", "phx.server"]
+# Run tests
+CMD ["mix", "test"]

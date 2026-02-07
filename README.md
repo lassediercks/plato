@@ -2,89 +2,32 @@
 
 A schema-driven headless CMS for Phoenix applications. Create dynamic content types, manage relationships, and query content with a clean API. Includes a mountable admin UI for content management.
 
-## Repository Structure
-
-This is an **umbrella project** containing:
-
-- **`apps/plato`** - The Plato library (publishable to Hex)
-- **`apps/plato_demo`** - Demo Phoenix app showing complete integration
+[![Hex.pm](https://img.shields.io/hexpm/v/plato.svg)](https://hex.pm/packages/plato)
+[![Documentation](https://img.shields.io/badge/docs-hexpm-blue.svg)](https://hexdocs.pm/plato)
 
 ## Features
 
-- **Schema-driven content**: Define content types dynamically through the admin UI
-- **Field types**: Text fields and reference fields (relationships between content)
+- **Schema-driven content**: Define content types dynamically through admin UI or code
+- **Field types**: Text, rich text, images, and reference fields (relationships between content)
+- **Image uploads**: Upload and manage images with S3-compatible storage
+- **Field options**: Multiline text fields with customizable textarea rows
 - **Unique schemas**: Mark schemas as singleton (only one content instance allowed)
 - **Clean API**: Query content by schema name with automatic field resolution
 - **View helpers**: Template-friendly functions for easy content rendering
 - **Mountable admin**: Admin UI can be mounted at any path in your router
 - **Multi-tenant ready**: Support for multiple Plato instances with different databases
+- **Code-managed schemas**: Define schemas in code for version control and consistency
 
-## Development Setup
-
-### With Docker (Recommended)
-
-Run both the library tests and demo app:
-
-```bash
-git clone https://github.com/lassediercks/plato.git
-cd plato
-docker-compose up
-```
-
-This will:
-
-1. Start PostgreSQL database
-2. Run Plato library tests (142 tests - ensures everything works)
-3. Start the demo app (only if tests pass)
-
-Visit:
-
-- **Demo app with CMS content**: http://localhost:4500
-- **Admin UI**: http://localhost:4500/admin/cms
-
-### Without Docker
-
-#### Run Library Tests
-
-```bash
-cd apps/plato
-docker-compose -f docker-compose.test.yml up -d
-MIX_ENV=test mix ecto.create
-MIX_ENV=test mix ecto.migrate
-mix test
-```
-
-See [apps/plato/TESTING.md](apps/plato/TESTING.md) for details.
-
-#### Run Demo App
-
-```bash
-cd apps/plato_demo
-mix deps.get
-mix ecto.create
-mix plato.install
-mix ecto.migrate
-mix phx.server
-```
-
-Visit http://localhost:4000 to see the demo.
-
-See [apps/plato_demo/README.md](apps/plato_demo/) for full documentation.
-
-## Using Plato in Your Project
-
-For complete installation and usage instructions, see the **[Plato library documentation](apps/plato/README.md)**.
-
-Quick start:
-
-### Installation
+## Installation
 
 Add `plato` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:plato, "~> 0.0.7"} # x-release-please-version
+    # x-release-please-start-version
+    {:plato, "~> 0.0.19"}
+    # x-release-please-end
   ]
 end
 ```
@@ -97,7 +40,128 @@ mix plato.install
 mix ecto.migrate
 ```
 
-## Configuration
+## S3 Configuration for Image Fields
+
+To use image fields, you need to configure S3-compatible storage. Plato supports AWS S3, SeaweedFS, MinIO, and other S3-compatible services.
+
+### Required Dependencies
+
+Add these dependencies to your `mix.exs` if you want to use image fields:
+
+```elixir
+def deps do
+  [
+    # x-release-please-start-version
+    {:plato, "~> 0.0.19"},
+    # x-release-please-end
+
+    # Required for image field support
+    {:ex_aws, "~> 2.5"},
+    {:ex_aws_s3, "~> 2.5"},
+    {:hackney, "~> 1.20"}
+  ]
+end
+```
+
+### Storage Configuration
+
+Configure S3 storage in your `config/config.exs` or `config/runtime.exs`:
+
+```elixir
+# For AWS S3
+config :my_app, :plato,
+  repo: MyApp.Repo,
+  storage: [
+    adapter: Plato.Storage.S3Adapter,
+    bucket: "my-app-uploads",
+    region: "us-east-1",
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+    signed_url_expiry: 3600  # URL expiry in seconds
+  ]
+
+# For SeaweedFS (local development)
+config :my_app, :plato,
+  repo: MyApp.Repo,
+  storage: [
+    adapter: Plato.Storage.S3Adapter,
+    bucket: "plato-uploads",
+    endpoint: "http://localhost:8333",
+    internal_endpoint: "http://seaweedfs:8333",  # For Docker
+    access_key_id: "any-key",
+    secret_access_key: "any-secret",
+    region: "us-east-1"
+  ]
+```
+
+### SeaweedFS for Local Development
+
+SeaweedFS provides an S3-compatible API perfect for local development. Add it to your `docker-compose.yml`:
+
+```yaml
+services:
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    command: "server -s3 -dir=/data"
+    ports:
+      - "8333:8333" # S3 API
+      - "9333:9333" # Master
+      - "8080:8080" # Filer
+    volumes:
+      - seaweedfs_data:/data
+
+volumes:
+  seaweedfs_data:
+```
+
+Create the bucket on startup:
+
+```bash
+curl -X POST 'http://localhost:8080/buckets' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"plato-uploads"}'
+```
+
+### Configuration Options
+
+**Required:**
+
+- `adapter` - Storage adapter module (e.g., `Plato.Storage.S3Adapter`)
+- `bucket` - S3 bucket name
+- `access_key_id` - AWS/S3 access key ID
+- `secret_access_key` - AWS/S3 secret access key
+
+**Optional:**
+
+- `region` - AWS region (default: "us-east-1")
+- `endpoint` - Custom endpoint for S3-compatible services (e.g., SeaweedFS, MinIO)
+- `internal_endpoint` - Endpoint for server-side operations in Docker
+- `signed_url_expiry` - Signed URL expiration in seconds (default: 3600)
+
+**Note:** Image fields will only be available if storage is properly configured. Without S3 configuration, you can still use text, rich text, and reference fields.
+
+### Upload Size Limits
+
+For large image uploads, you need to configure the parser limit in your endpoint:
+
+```elixir
+# lib/my_app_web/endpoint.ex
+plug Plug.Parsers,
+  parsers: [:urlencoded, :multipart, :json],
+  pass: ["*/*"],
+  json_decoder: Phoenix.json_library(),
+  length: 100_000_000  # 100MB limit (default is 8MB)
+```
+
+The `length` option sets the maximum request body size in bytes. Adjust based on your needs:
+
+- `10_000_000` - 10MB
+- `50_000_000` - 50MB
+- `100_000_000` - 100MB
+
+## Quick Start
+
+### 1. Configure
 
 Configure Plato to use your application's repo in `config/config.exs`:
 
@@ -106,16 +170,16 @@ config :my_app, :plato,
   repo: MyApp.Repo
 ```
 
-Or set a default otp_app to avoid passing it as an option everywhere:
+Or set a default otp_app:
 
 ```elixir
 config :plato,
   default_otp_app: :my_app
 ```
 
-**Note:** Plato uses your application's repo - it does not start its own database connection. Make sure your repo is configured and started in your application's supervision tree.
+**Note:** Plato uses your application's repo - it does not start its own database connection.
 
-## Mount Admin UI
+### 2. Mount Admin UI
 
 Import the Plato router and mount the admin interface in your `router.ex`:
 
@@ -126,156 +190,90 @@ import Plato.Router
 scope "/" do
   pipe_through :browser
 
-  # Mount admin at any path you want (default recommended: /admin/cms)
+  # Mount admin at any path you want
   plato_admin "/admin/cms", otp_app: :my_app
 end
 ```
 
 Now visit `/admin/cms` to manage your content schemas.
 
-## Usage
+### 3. Define Schemas
 
-### Creating Schemas
-
-You can create schemas in two ways:
-
-#### 1. Via Admin UI
-
-Use the admin UI to create schemas dynamically:
+#### Option A: Via Admin UI
 
 1. Visit `/admin/cms`
 2. Create a "Homepage" schema with `unique: true`
 3. Add fields: "title" (text), "tagline" (text)
 
-#### 2. Via Code (Recommended for production)
+#### Option B: In Code (Recommended)
 
-Define schemas in your application code for version control and consistency:
+Define schemas in your application code for version control:
 
 ```elixir
 # lib/my_app/content_schemas.ex
 defmodule MyApp.ContentSchemas do
   use Plato.SchemaBuilder
 
-  schema "login-header", unique: true do
+  schema "homepage", unique: true do
     field :title, :text
     field :tagline, :text
   end
 
   schema "blog-post" do
     field :title, :text
-    field :body, :text
+    field :cover_image, :image
+    field :excerpt, :text, multiline: true
+    field :body, :text, multiline: true
     field :author, :reference, to: "author"
   end
 
   schema "author" do
     field :name, :text
-    field :bio, :text
+    field :bio, :text, multiline: true
   end
 end
 ```
 
-Then sync to database:
+Sync to database in your `application.ex`:
 
 ```elixir
-# In application.ex start/2 callback
 def start(_type, _args) do
-  # ... supervisor setup ...
+  children = [
+    MyApp.Repo,
+    # ... other children
+  ]
 
-  # Sync CMS schemas on app start
+  opts = [strategy: :one_for_one, name: MyApp.Supervisor]
+  {:ok, pid} = Supervisor.start_link(children, opts)
+
+  # Sync CMS schemas after repo starts
   Plato.sync_schemas(MyApp.ContentSchemas, otp_app: :my_app)
 
-  # ... rest of start function ...
+  {:ok, pid}
 end
 ```
 
-Or in a migration:
+### 4. Query Content
 
 ```elixir
-defmodule MyApp.Repo.Migrations.SyncCMSSchemas do
-  use Ecto.Migration
+# Get unique content (singleton schemas)
+{:ok, homepage} = Plato.get_content("homepage", otp_app: :my_app)
+homepage.title
+#=> "Welcome to My Site"
 
-  def up do
-    Plato.sync_schemas(MyApp.ContentSchemas, repo: MyApp.Repo)
-  end
+# List all content for a schema
+{:ok, posts} = Plato.list_content("blog-post", otp_app: :my_app)
 
-  def down do
-    # Schemas remain in database but can be manually deleted if needed
-  end
-end
+# Get content by ID
+{:ok, post} = Plato.get_content_by_id(1, otp_app: :my_app)
 ```
 
-**Benefits of code-defined schemas:**
+### 5. Use View Helpers
 
-- Version controlled with your application
-- Can't be accidentally modified or deleted through UI
-- Automatically synced across environments
-- Content can still be managed through the admin UI
-
-### Querying Content
-
-#### Get unique content (singleton schemas)
+Import helpers in your view module:
 
 ```elixir
-# In your controller
-def index(conn, _params) do
-  {:ok, homepage} = Plato.get_content("homepage", otp_app: :my_app)
-  render(conn, :index, homepage: homepage)
-end
-```
-
-```heex
-<!-- In your template -->
-<h1><%= @homepage.title %></h1>
-<p><%= @homepage.tagline %></p>
-```
-
-#### List all content for a schema
-
-```elixir
-def blog(conn, _params) do
-  {:ok, posts} = Plato.list_content("blog_post", otp_app: :my_app)
-  render(conn, :blog, posts: posts)
-end
-```
-
-```heex
-<%= for post <- @posts do %>
-  <article>
-    <h2><%= post.title %></h2>
-    <p><%= post.body %></p>
-    <small>By <%= post.author.name %></small>
-  </article>
-<% end %>
-```
-
-#### Get content by ID
-
-```elixir
-{:ok, content} = Plato.get_content_by_id(1, otp_app: :my_app)
-```
-
-#### Create and update content
-
-```elixir
-# Create content
-{:ok, post} = Plato.create_content("blog_post", %{
-  title: "My First Post",
-  body: "Content here...",
-  author_id: 1  # ID of referenced content
-}, otp_app: :my_app)
-
-# Update content
-{:ok, updated} = Plato.update_content(post_id, %{
-  title: "Updated Title"
-}, otp_app: :my_app)
-```
-
-### View Helpers
-
-For even simpler template integration, use the view helpers:
-
-```elixir
-# lib/my_app_web/my_app_web.ex
+# lib/my_app_web.ex
 def html do
   quote do
     use Phoenix.Component
@@ -284,6 +282,8 @@ def html do
   end
 end
 ```
+
+Use in templates:
 
 ```heex
 <!-- Fetch single field value -->
@@ -295,25 +295,14 @@ end
 <% end) %>
 
 <!-- List and render multiple items -->
-<%= plato_list("blog_post", otp_app: :my_app, fn post -> %>
+<%= plato_list("blog-post", otp_app: :my_app, fn post -> %>
   <article>
     <h2><%= post.title %></h2>
     <p><%= post.body %></p>
+    <small>By <%= post.author.name %></small>
   </article>
 <% end) %>
 ```
-
-## Admin UI Features
-
-The admin interface provides:
-
-- **Schemas**: Create and manage content types (via UI or code)
-- **Fields**: Add text fields and references to other schemas
-- **Content**: Create and edit content instances
-- **Code-managed schemas**: Define schemas in code (read-only in UI)
-- **Unique validation**: Prevent multiple instances of unique schemas
-- **Reference resolution**: Automatically resolve and display referenced content
-- **Field deletion**: Validate which content would be affected before deleting fields
 
 ## API Reference
 
@@ -332,6 +321,8 @@ The admin interface provides:
 - `use Plato.SchemaBuilder` - Import schema definition macros
 - `schema/2` - Define a schema with name and options
 - `field/3` - Define a field within a schema
+  - Field options for text fields:
+    - `multiline: true` - Render as textarea instead of input (100% width, 250px height)
 
 ### View Helpers
 
@@ -339,12 +330,46 @@ The admin interface provides:
 - `Plato.Helpers.plato_render/4` - Fetch and render with function
 - `Plato.Helpers.plato_list/3` - List and render multiple items
 
+## Admin UI Features
+
+The admin interface provides:
+
+- **Schemas**: Create and manage content types
+- **Fields**: Add text fields and references to other schemas
+  - Text fields support multiline option for textarea rendering (100% width, 250px height)
+- **Content**: Create and edit content instances
+  - Multiline fields automatically render as textareas
+- **Code-managed schemas**: Read-only display for schemas defined in code
+- **Unique validation**: Prevent multiple instances of unique schemas
+- **Reference resolution**: Automatically resolve and display referenced content
+- **Field deletion**: Validate which content would be affected before deleting fields
+
+## Examples
+
+See the [demo app](https://github.com/lassediercks/plato/tree/main/apps/plato_demo) for a complete working example.
+
 ## Development
 
-Run the development environment with Docker:
+This package is part of an umbrella project. To run tests:
 
 ```bash
-docker-compose up
+cd apps/plato
+docker-compose -f docker-compose.test.yml up -d
+MIX_ENV=test mix ecto.create
+MIX_ENV=test mix ecto.migrate
+mix test
 ```
 
-Visit `http://localhost:4500` to see the application.
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Links
+
+- [Documentation](https://hexdocs.pm/plato)
+- [GitHub](https://github.com/lassediercks/plato)
+- [Hex.pm](https://hex.pm/packages/plato)
