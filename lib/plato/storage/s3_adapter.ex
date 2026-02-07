@@ -1,8 +1,131 @@
 defmodule Plato.Storage.S3Adapter do
   @moduledoc """
-  S3 storage adapter using ExAws.
+  S3 storage adapter for Plato image fields using ExAws.
 
-  Supports AWS S3 and S3-compatible services like SeaweedFS.
+  Supports AWS S3 and S3-compatible services like SeaweedFS, MinIO, and others.
+
+  ## Dependencies
+
+  Add these to your `mix.exs` to use image fields:
+
+      def deps do
+        [
+          {:plato, "~> 0.0.19"},
+
+          # Required for image fields
+          {:ex_aws, "~> 2.5"},
+          {:ex_aws_s3, "~> 2.5"},
+          {:hackney, "~> 1.20"}
+        ]
+      end
+
+  ## Configuration
+
+  Configure storage in `config/config.exs` or `config/runtime.exs`:
+
+      # AWS S3 (production)
+      config :my_app, :plato,
+        repo: MyApp.Repo,
+        storage: [
+          adapter: Plato.Storage.S3Adapter,
+          bucket: "my-app-uploads",
+          region: "us-east-1",
+          access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+          secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+          signed_url_expiry: 3600  # URL expiry in seconds
+        ]
+
+      # SeaweedFS (local development)
+      config :my_app, :plato,
+        repo: MyApp.Repo,
+        storage: [
+          adapter: Plato.Storage.S3Adapter,
+          bucket: "plato-uploads",
+          endpoint: "http://localhost:8333",
+          access_key_id: "any-key",
+          secret_access_key: "any-secret",
+          region: "us-east-1"
+        ]
+
+  ## Configuration Options
+
+  **Required:**
+  - `:adapter` - Must be `Plato.Storage.S3Adapter`
+  - `:bucket` - S3 bucket name
+  - `:access_key_id` - AWS/S3 access key
+  - `:secret_access_key` - AWS/S3 secret key
+
+  **Optional:**
+  - `:region` - AWS region (default: "us-east-1")
+  - `:endpoint` - Custom endpoint for S3-compatible services
+  - `:internal_endpoint` - Endpoint for server-side operations (useful in Docker)
+  - `:signed_url_expiry` - URL expiration in seconds (default: 3600)
+
+  ## Local Development with SeaweedFS
+
+  SeaweedFS provides an S3-compatible API perfect for local development.
+
+  Add to `docker-compose.yml`:
+
+      services:
+        seaweedfs:
+          image: chrislusf/seaweedfs:latest
+          command: "server -s3 -dir=/data"
+          ports:
+            - "8333:8333"  # S3 API
+            - "9333:9333"  # Master
+            - "8080:8080"  # Volume
+          volumes:
+            - seaweedfs_data:/data
+
+      volumes:
+        seaweedfs_data:
+
+  Create bucket:
+
+      curl -X POST 'http://localhost:8080/buckets' \\
+        -H 'Content-Type: application/json' \\
+        -d '{"name":"plato-uploads"}'
+
+  See the [Plato Starter Repository](https://github.com/lassediercks/plato) for a
+  complete working example with SeaweedFS.
+
+  ## Upload Size Limits
+
+  Configure Phoenix to accept larger uploads in your endpoint:
+
+      # lib/my_app_web/endpoint.ex
+      plug Plug.Parsers,
+        parsers: [:urlencoded, :multipart, :json],
+        pass: ["*/*"],
+        json_decoder: Phoenix.json_library(),
+        length: 100_000_000  # 100MB limit (default is 8MB)
+
+  ## Image Field Usage
+
+  Once configured, image fields can be added to schemas:
+
+      schema "blog-post" do
+        field :title, :text
+        field :cover_image, :image
+        field :body, :text, multiline: true
+      end
+
+  Uploaded images are stored with metadata:
+
+      %{
+        "url" => "http://localhost:8333/bucket/path/to/image.jpg",
+        "storage_path" => "app/schema/field/timestamp_hash_filename.jpg",
+        "filename" => "original-filename.jpg",
+        "content_type" => "image/jpeg",
+        "size_bytes" => 245678
+      }
+
+  Access in templates:
+
+      <%= if post.cover_image do %>
+        <img src="<%= post.cover_image["url"] %>" alt="<%= post.title %>">
+      <% end %>
   """
 
   @behaviour Plato.Storage.Adapter

@@ -1,12 +1,37 @@
 defmodule Plato.Storage.Config do
   @moduledoc """
   Helper functions for retrieving storage configuration.
+
+  ## Examples
+
+  Check if storage is configured:
+
+      iex> Application.put_env(:test_app, :plato, storage: [
+      ...>   adapter: Plato.Storage.S3Adapter,
+      ...>   bucket: "test-bucket",
+      ...>   access_key_id: "key",
+      ...>   secret_access_key: "secret"
+      ...> ])
+      iex> Plato.Storage.Config.configured?(:test_app)
+      true
+
+      iex> Plato.Storage.Config.configured?(:unconfigured_app)
+      false
   """
 
   @doc """
   Get storage configuration for an otp_app.
 
   Returns the storage keyword list from the app's Plato configuration.
+
+  ## Examples
+
+      iex> Application.put_env(:my_app, :plato, storage: [bucket: "my-bucket"])
+      iex> Plato.Storage.Config.get(:my_app)
+      [bucket: "my-bucket"]
+
+      iex> Plato.Storage.Config.get(:nonexistent_app)
+      []
   """
   def get(otp_app) do
     otp_app

@@ -1,4 +1,29 @@
 defmodule Plato.Schema do
+  @moduledoc """
+  Schema definition for content types.
+
+  Schemas define the structure of content types in Plato CMS. Each schema has a name,
+  can be marked as unique (singleton), and contains field definitions.
+
+  ## Managed By
+
+  Schemas can be managed in two ways:
+
+  - `"ui"` - Created and managed through the admin interface (default)
+  - `"code"` - Defined in code using `Plato.SchemaBuilder` and synced via `Plato.sync_schemas/2`
+
+  Code-managed schemas appear as read-only in the admin UI.
+
+  ## Fields
+
+  - `name` - Unique schema identifier (e.g., "homepage", "blog-post")
+  - `unique` - If true, only one content instance allowed (default: false)
+  - `managed_by` - Source of schema management ("ui" or "code")
+  - `fields` - Associated field definitions
+
+  This module is primarily used internally. Use the `Plato` module and
+  `Plato.SchemaBuilder` for schema operations instead.
+  """
   use Ecto.Schema
   import Ecto.Changeset
 

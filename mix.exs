@@ -72,11 +72,14 @@ defmodule Plato.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "CHANGELOG.md"],
+      extras: ["README.md", "CHANGELOG.md", "LICENSE"],
       # x-release-please-start-version
       source_ref: "v0.0.19",
       # x-release-please-end
-      source_url: "https://github.com/lassediercks/plato"
+      source_url: "https://github.com/lassediercks/plato",
+      groups_for_extras: [
+        "Project": ["README.md", "CHANGELOG.md", "LICENSE"]
+      ]
     ]
   end
 end

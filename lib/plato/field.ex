@@ -1,4 +1,39 @@
 defmodule Plato.Field do
+  @moduledoc """
+  Field definition schema for content schemas.
+
+  Fields define the structure and type of data that can be stored in content instances.
+  Each field belongs to a schema and can have various types and options.
+
+  ## Field Types
+
+  - `"text"` - Single-line or multiline text
+  - `"richtext"` - Rich text editor (future)
+  - `"reference"` - Reference to another content instance
+  - `"image"` - Image upload (requires S3 configuration)
+
+  ## Field Options
+
+  Options are stored as a JSONB map and vary by field type:
+
+  ### Text Fields
+  - `"multiline"` - Boolean, render as textarea instead of input
+
+  ### Reference Fields
+  - Requires `referenced_schema_id` to be set
+
+  ### Image Fields
+  - Requires S3 storage to be configured for the otp_app
+  - Will not appear in UI if storage is not configured
+
+  ## Field Positioning
+
+  Fields have a `position` integer that determines their display order in forms.
+  Lower numbers appear first.
+
+  This module is primarily used internally. Use `Plato.SchemaBuilder` to define
+  fields in code, or the admin UI to create them interactively.
+  """
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query

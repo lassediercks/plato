@@ -20,7 +20,7 @@ A schema-driven headless CMS for Phoenix applications. Create dynamic content ty
 
 ## Installation
 
-Add `plato` to your list of dependencies in `mix.exs`:
+Add `plato` to your dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -40,128 +40,11 @@ mix plato.install
 mix ecto.migrate
 ```
 
-## S3 Configuration for Image Fields
-
-To use image fields, you need to configure S3-compatible storage. Plato supports AWS S3, SeaweedFS, MinIO, and other S3-compatible services.
-
-### Required Dependencies
-
-Add these dependencies to your `mix.exs` if you want to use image fields:
-
-```elixir
-def deps do
-  [
-    # x-release-please-start-version
-    {:plato, "~> 0.0.19"},
-    # x-release-please-end
-
-    # Required for image field support
-    {:ex_aws, "~> 2.5"},
-    {:ex_aws_s3, "~> 2.5"},
-    {:hackney, "~> 1.20"}
-  ]
-end
-```
-
-### Storage Configuration
-
-Configure S3 storage in your `config/config.exs` or `config/runtime.exs`:
-
-```elixir
-# For AWS S3
-config :my_app, :plato,
-  repo: MyApp.Repo,
-  storage: [
-    adapter: Plato.Storage.S3Adapter,
-    bucket: "my-app-uploads",
-    region: "us-east-1",
-    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
-    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
-    signed_url_expiry: 3600  # URL expiry in seconds
-  ]
-
-# For SeaweedFS (local development)
-config :my_app, :plato,
-  repo: MyApp.Repo,
-  storage: [
-    adapter: Plato.Storage.S3Adapter,
-    bucket: "plato-uploads",
-    endpoint: "http://localhost:8333",
-    internal_endpoint: "http://seaweedfs:8333",  # For Docker
-    access_key_id: "any-key",
-    secret_access_key: "any-secret",
-    region: "us-east-1"
-  ]
-```
-
-### SeaweedFS for Local Development
-
-SeaweedFS provides an S3-compatible API perfect for local development. Add it to your `docker-compose.yml`:
-
-```yaml
-services:
-  seaweedfs:
-    image: chrislusf/seaweedfs:latest
-    command: "server -s3 -dir=/data"
-    ports:
-      - "8333:8333" # S3 API
-      - "9333:9333" # Master
-      - "8080:8080" # Filer
-    volumes:
-      - seaweedfs_data:/data
-
-volumes:
-  seaweedfs_data:
-```
-
-Create the bucket on startup:
-
-```bash
-curl -X POST 'http://localhost:8080/buckets' \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"plato-uploads"}'
-```
-
-### Configuration Options
-
-**Required:**
-
-- `adapter` - Storage adapter module (e.g., `Plato.Storage.S3Adapter`)
-- `bucket` - S3 bucket name
-- `access_key_id` - AWS/S3 access key ID
-- `secret_access_key` - AWS/S3 secret access key
-
-**Optional:**
-
-- `region` - AWS region (default: "us-east-1")
-- `endpoint` - Custom endpoint for S3-compatible services (e.g., SeaweedFS, MinIO)
-- `internal_endpoint` - Endpoint for server-side operations in Docker
-- `signed_url_expiry` - Signed URL expiration in seconds (default: 3600)
-
-**Note:** Image fields will only be available if storage is properly configured. Without S3 configuration, you can still use text, rich text, and reference fields.
-
-### Upload Size Limits
-
-For large image uploads, you need to configure the parser limit in your endpoint:
-
-```elixir
-# lib/my_app_web/endpoint.ex
-plug Plug.Parsers,
-  parsers: [:urlencoded, :multipart, :json],
-  pass: ["*/*"],
-  json_decoder: Phoenix.json_library(),
-  length: 100_000_000  # 100MB limit (default is 8MB)
-```
-
-The `length` option sets the maximum request body size in bytes. Adjust based on your needs:
-
-- `10_000_000` - 10MB
-- `50_000_000` - 50MB
-- `100_000_000` - 100MB
-
 ## Quick Start
 
-### 1. Configure
+For a complete working example with database setup, S3 configuration, and Docker support, see the [Plato Starter Repository](https://github.com/lassediercks/plato).
+
+### 1. Configure Your Repo
 
 Configure Plato to use your application's repo in `config/config.exs`:
 
@@ -170,47 +53,29 @@ config :my_app, :plato,
   repo: MyApp.Repo
 ```
 
-Or set a default otp_app:
-
-```elixir
-config :plato,
-  default_otp_app: :my_app
-```
-
-**Note:** Plato uses your application's repo - it does not start its own database connection.
-
-### 2. Mount Admin UI
+### 2. Mount the Admin UI
 
 Import the Plato router and mount the admin interface in your `router.ex`:
 
 ```elixir
-# lib/my_app_web/router.ex
-import Plato.Router
+defmodule MyAppWeb.Router do
+  use Phoenix.Router
+  import Plato.Router
 
-scope "/" do
-  pipe_through :browser
-
-  # Mount admin at any path you want
-  plato_admin "/admin/cms", otp_app: :my_app
+  scope "/" do
+    pipe_through :browser
+    plato_admin "/admin/cms", otp_app: :my_app
+  end
 end
 ```
 
-Now visit `/admin/cms` to manage your content schemas.
+Visit `/admin/cms` to manage your content schemas.
 
-### 3. Define Schemas
+### 3. Define Schemas in Code
 
-#### Option A: Via Admin UI
-
-1. Visit `/admin/cms`
-2. Create a "Homepage" schema with `unique: true`
-3. Add fields: "title" (text), "tagline" (text)
-
-#### Option B: In Code (Recommended)
-
-Define schemas in your application code for version control:
+Define schemas in your application for version control:
 
 ```elixir
-# lib/my_app/content_schemas.ex
 defmodule MyApp.ContentSchemas do
   use Plato.SchemaBuilder
 
@@ -221,7 +86,7 @@ defmodule MyApp.ContentSchemas do
 
   schema "blog-post" do
     field :title, :text
-    field :cover_image, :image
+    field :slug, :text
     field :excerpt, :text, multiline: true
     field :body, :text, multiline: true
     field :author, :reference, to: "author"
@@ -234,7 +99,7 @@ defmodule MyApp.ContentSchemas do
 end
 ```
 
-Sync to database in your `application.ex`:
+Sync schemas on application start in `application.ex`:
 
 ```elixir
 def start(_type, _args) do
@@ -264,11 +129,11 @@ homepage.title
 # List all content for a schema
 {:ok, posts} = Plato.list_content("blog-post", otp_app: :my_app)
 
-# Get content by ID
-{:ok, post} = Plato.get_content_by_id(1, otp_app: :my_app)
+# Get content by field value (e.g., slug lookup)
+{:ok, post} = Plato.get_content_by_field("blog-post", "slug", "my-first-post", otp_app: :my_app)
 ```
 
-### 5. Use View Helpers
+### 5. Use in Templates
 
 Import helpers in your view module:
 
@@ -289,87 +154,95 @@ Use in templates:
 <!-- Fetch single field value -->
 <h1><%= plato_content("homepage", :title, otp_app: :my_app) %></h1>
 
-<!-- Render content with a function -->
-<%= plato_render("homepage", :hero, otp_app: :my_app, fn hero -> %>
-  <img src="<%= hero.url %>" alt="<%= hero.alt_text %>">
-<% end) %>
-
 <!-- List and render multiple items -->
 <%= plato_list("blog-post", otp_app: :my_app, fn post -> %>
   <article>
     <h2><%= post.title %></h2>
-    <p><%= post.body %></p>
+    <p><%= post.excerpt %></p>
     <small>By <%= post.author.name %></small>
   </article>
 <% end) %>
 ```
 
-## API Reference
+## Image Field Support (Optional)
 
-### Main Functions
+To use image fields, you need S3-compatible storage. Add these dependencies to `mix.exs`:
 
-- `Plato.sync_schemas/2` - Sync code-defined schemas to database
-- `Plato.get_content/2` - Get unique content by schema name
-- `Plato.get_content!/2` - Get unique content, raises on error
-- `Plato.list_content/2` - List all content for a schema
-- `Plato.get_content_by_id/2` - Get content by database ID
-- `Plato.create_content/3` - Create new content
-- `Plato.update_content/3` - Update existing content
+```elixir
+def deps do
+  [
+    {:plato, "~> 0.0.19"},
 
-### Schema Builder (DSL)
+    # Required for image field support
+    {:ex_aws, "~> 2.5"},
+    {:ex_aws_s3, "~> 2.5"},
+    {:hackney, "~> 1.20"}
+  ]
+end
+```
 
-- `use Plato.SchemaBuilder` - Import schema definition macros
-- `schema/2` - Define a schema with name and options
-- `field/3` - Define a field within a schema
-  - Field options for text fields:
-    - `multiline: true` - Render as textarea instead of input (100% width, 250px height)
+Then configure storage in `config/config.exs` or `config/runtime.exs`:
 
-### View Helpers
+```elixir
+# For AWS S3
+config :my_app, :plato,
+  repo: MyApp.Repo,
+  storage: [
+    adapter: Plato.Storage.S3Adapter,
+    bucket: "my-app-uploads",
+    region: "us-east-1",
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+    signed_url_expiry: 3600
+  ]
 
-- `Plato.Helpers.plato_content/3` - Fetch single field value
-- `Plato.Helpers.plato_render/4` - Fetch and render with function
-- `Plato.Helpers.plato_list/3` - List and render multiple items
+# For SeaweedFS (local development)
+config :my_app, :plato,
+  repo: MyApp.Repo,
+  storage: [
+    adapter: Plato.Storage.S3Adapter,
+    bucket: "plato-uploads",
+    endpoint: "http://localhost:8333",
+    access_key_id: "any-key",
+    secret_access_key: "any-secret",
+    region: "us-east-1"
+  ]
+```
 
-## Admin UI Features
+For a complete local development setup with SeaweedFS and Docker, see the [Plato Starter Repository](https://github.com/lassediercks/plato).
 
-The admin interface provides:
+**Note:** Without S3 configuration, image fields will not be available in the admin UI. You can still use text and reference fields.
 
-- **Schemas**: Create and manage content types
-- **Fields**: Add text fields and references to other schemas
-  - Text fields support multiline option for textarea rendering (100% width, 250px height)
-- **Content**: Create and edit content instances
-  - Multiline fields automatically render as textareas
-- **Code-managed schemas**: Read-only display for schemas defined in code
-- **Unique validation**: Prevent multiple instances of unique schemas
-- **Reference resolution**: Automatically resolve and display referenced content
-- **Field deletion**: Validate which content would be affected before deleting fields
+## Documentation
+
+- **[API Reference](https://hexdocs.pm/plato)** - Complete module and function documentation
+- **[Starter Repository](https://github.com/lassediercks/plato)** - Full working example with Docker setup
+- **[Changelog](CHANGELOG.md)** - Version history and breaking changes
+
+### Key Modules
+
+- `Plato` - Main API for querying and managing content
+- `Plato.SchemaBuilder` - DSL for defining schemas in code
+- `Plato.Helpers` - View helpers for templates
+- `Plato.Router` - Admin UI mounting
+- `Plato.Storage.S3Adapter` - S3-compatible storage backend
 
 ## Examples
 
-See the [demo app](https://github.com/lassediercks/plato/tree/main/apps/plato_demo) for a complete working example.
-
-## Development
-
-This package is part of an umbrella project. To run tests:
-
-```bash
-cd apps/plato
-docker-compose -f docker-compose.test.yml up -d
-MIX_ENV=test mix ecto.create
-MIX_ENV=test mix ecto.migrate
-mix test
-```
+See the [Plato Starter Repository](https://github.com/lassediercks/plato) for:
+- Complete Phoenix application setup
+- Schema definitions for blog, homepage, and author content
+- S3/SeaweedFS configuration for local development
+- Docker Compose setup
+- Example queries and templates
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Links
 
 - [Documentation](https://hexdocs.pm/plato)
 - [GitHub](https://github.com/lassediercks/plato)
 - [Hex.pm](https://hex.pm/packages/plato)
+- [Starter Repository](https://github.com/lassediercks/plato)

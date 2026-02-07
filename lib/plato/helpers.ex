@@ -26,11 +26,18 @@ defmodule Plato.Helpers do
 
   ## Examples
 
+  In templates:
+
       <%= plato_content("homepage", :title, otp_app: :my_app) %>
       #=> "Welcome to My Site"
 
       <%= plato_content("homepage", :tagline, otp_app: :my_app) %>
       #=> "The best site ever"
+
+  Returns nil for missing content:
+
+      iex> Plato.Helpers.plato_content("nonexistent", :title, repo: Plato.Repo)
+      nil
   """
   @spec plato_content(String.t(), atom(), keyword()) :: any()
   def plato_content(schema_name, field_name, opts \\ []) do

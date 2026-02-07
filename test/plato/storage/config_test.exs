@@ -1,5 +1,6 @@
 defmodule Plato.Storage.ConfigTest do
   use ExUnit.Case, async: true
+  doctest Plato.Storage.Config
 
   alias Plato.Storage.Config
 
