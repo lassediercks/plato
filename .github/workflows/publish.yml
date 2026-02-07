@@ -16,15 +16,10 @@ jobs:
           elixir-version: "1.18"
           otp-version: "27"
 
-      - name: Install dependencies (including docs)
-        run: |
-          cd apps/plato
-          MIX_ENV=dev mix deps.get
-
-      - name: Publish to Hex with docs
+      - name: Install dependencies and publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-          MIX_ENV: dev
         run: |
           cd apps/plato
+          mix deps.get
           mix hex.publish --yes
