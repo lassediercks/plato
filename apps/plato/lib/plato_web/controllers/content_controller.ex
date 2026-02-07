@@ -50,13 +50,19 @@ defmodule PlatoWeb.ContentController do
         field_value = Map.get(content.field_values, field_id_str)
 
         # If it's a reference field, resolve it
-        if field.field_type == "reference" && field_value do
-          case repo.get(Plato.Content, field_value) do
-            nil -> field_value
-            referenced_content -> get_content_title(referenced_content, repo)
-          end
-        else
-          field_value
+        cond do
+          field.field_type == "reference" && field_value ->
+            case repo.get(Plato.Content, field_value) do
+              nil -> field_value
+              referenced_content -> get_content_title(referenced_content, repo)
+            end
+
+          field.field_type == "image" && is_map(field_value) ->
+            # For image fields, extract the filename from the metadata map
+            Map.get(field_value, "filename")
+
+          true ->
+            field_value
         end
     end
   end
