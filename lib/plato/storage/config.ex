@@ -6,14 +6,16 @@ defmodule Plato.Storage.Config do
 
   Check if storage is configured:
 
-      iex> Application.put_env(:test_app, :plato, storage: [
+      iex> Application.put_env(:example_app, :plato, storage: [
       ...>   adapter: Plato.Storage.S3Adapter,
       ...>   bucket: "test-bucket",
       ...>   access_key_id: "key",
       ...>   secret_access_key: "secret"
       ...> ])
-      iex> Plato.Storage.Config.configured?(:test_app)
+      iex> Plato.Storage.Config.configured?(:example_app)
       true
+      iex> Application.delete_env(:example_app, :plato)
+      :ok
 
       iex> Plato.Storage.Config.configured?(:unconfigured_app)
       false
