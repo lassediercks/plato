@@ -247,6 +247,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## Links
 
 - [Documentation](https://hexdocs.pm/plato)
-- [GitHub](https://github.com/lassediercks/plato)
 - [Hex.pm](https://hex.pm/packages/plato)
-- [Starter Repository](https://github.com/lassediercks/plato)
+- [GitHub](https://github.com/lassediercks/plato)
+- [Starter Repository](https://github.com/lassediercks/plato-starter)
