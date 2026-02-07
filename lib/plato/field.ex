@@ -65,15 +65,25 @@ defmodule Plato.Field do
 
   Options:
     * `:otp_app` - The OTP app to check for storage configuration (required for image fields)
+    * `:repo` - The Ecto repo to use for database operations (optional, derived from otp_app if not provided)
   """
   def changeset(field, attrs, opts \\ []) do
-    field
-    |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options, :position])
-    |> validate_required([:schema_id, :name])
-    |> validate_inclusion(:field_type, ["text", "richtext", "reference", "image"])
-    |> validate_options()
-    |> validate_reference_schema()
-    |> validate_image_field_requirements(opts)
+    repo = get_repo_from_opts(opts)
+
+    changeset =
+      field
+      |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options, :position])
+      |> validate_required([:schema_id, :name])
+      |> validate_inclusion(:field_type, ["text", "richtext", "reference", "image"])
+      |> validate_options()
+      |> validate_reference_schema()
+      |> validate_image_field_requirements(opts)
+
+    # Store repo in changeset private metadata
+    private = Map.get(changeset, :private, %{})
+
+    changeset
+    |> Map.put(:private, Map.put(private, :plato_repo, repo))
     |> set_reference_name()
   end
 
@@ -153,11 +163,13 @@ defmodule Plato.Field do
     field_type = get_field(changeset, :field_type)
     name = get_field(changeset, :name)
     referenced_schema_id = get_field(changeset, :referenced_schema_id)
+    private = Map.get(changeset, :private, %{})
+    repo = Map.get(private, :plato_repo, Plato.Repo)
 
     case {field_type, name, referenced_schema_id} do
       {"reference", nil, id} when not is_nil(id) ->
         # Auto-generate name from referenced schema
-        case Plato.Repo.get(Plato.Schema, id) do
+        case repo.get(Plato.Schema, id) do
           nil -> changeset
           schema -> put_change(changeset, :name, schema.name)
         end
@@ -167,8 +179,33 @@ defmodule Plato.Field do
     end
   end
 
+  defp get_repo_from_opts(opts) do
+    cond do
+      # Explicit repo in opts takes precedence
+      repo = opts[:repo] ->
+        repo
+
+      # Derive repo from otp_app configuration
+      otp_app = opts[:otp_app] ->
+        get_repo_from_otp_app(otp_app)
+
+      # Fall back to Plato.Repo (for tests and standalone usage)
+      true ->
+        Plato.Repo
+    end
+  end
+
+  defp get_repo_from_otp_app(otp_app) do
+    otp_app
+    |> Application.get_env(:plato, [])
+    |> Keyword.get(:repo, Plato.Repo)
+  end
+
   @spec create(map(), module(), keyword()) :: {:ok, t()} | {:error, Ecto.Changeset.t()}
   def create(attrs, repo \\ Plato.Repo, opts \\ []) do
+    # Ensure repo is in opts for changeset validation
+    opts = Keyword.put_new(opts, :repo, repo)
+
     # If position is not provided, calculate the next position for this schema
     attrs_with_position =
       if Map.has_key?(attrs, :position) or Map.has_key?(attrs, "position") do
