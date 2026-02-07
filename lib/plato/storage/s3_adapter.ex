@@ -10,7 +10,10 @@ defmodule Plato.Storage.S3Adapter do
 
       def deps do
         [
+          # x-release-please-start-version
           {:plato, "~> 0.0.19"},
+          # x-release-please-end
+
 
           # Required for image fields
           {:ex_aws, "~> 2.5"},
@@ -174,9 +177,7 @@ defmodule Plato.Storage.S3Adapter do
       config_opts = build_ex_aws_config(config, :external)
       ex_aws_config = ExAws.Config.new(:s3, config_opts)
 
-      case ExAws.S3.presigned_url(ex_aws_config, :get, bucket, storage_path,
-             expires_in: expiry
-           ) do
+      case ExAws.S3.presigned_url(ex_aws_config, :get, bucket, storage_path, expires_in: expiry) do
         {:ok, signed_url} -> {:ok, signed_url}
         {:error, reason} -> {:error, reason}
       end

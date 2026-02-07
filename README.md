@@ -171,7 +171,10 @@ To use image fields, you need S3-compatible storage. Add these dependencies to `
 ```elixir
 def deps do
   [
+    # x-release-please-start-version
     {:plato, "~> 0.0.19"},
+    # x-release-please-end
+
 
     # Required for image field support
     {:ex_aws, "~> 2.5"},
@@ -230,6 +233,7 @@ For a complete local development setup with SeaweedFS and Docker, see the [Plato
 ## Examples
 
 See the [Plato Starter Repository](https://github.com/lassediercks/plato) for:
+
 - Complete Phoenix application setup
 - Schema definitions for blog, homepage, and author content
 - S3/SeaweedFS configuration for local development
