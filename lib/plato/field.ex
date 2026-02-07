@@ -70,21 +70,33 @@ defmodule Plato.Field do
   def changeset(field, attrs, opts \\ []) do
     repo = get_repo_from_opts(opts)
 
+    # Normalize empty string name to nil to allow auto-generation for reference fields
+    attrs = normalize_name(attrs)
+
+    # Store repo in changeset private metadata for set_reference_name to use
+    private = %{plato_repo: repo}
+
     changeset =
       field
       |> cast(attrs, [:name, :schema_id, :field_type, :referenced_schema_id, :options, :position])
+      |> Map.put(:private, private)
+      |> set_reference_name()
       |> validate_required([:schema_id, :name])
       |> validate_inclusion(:field_type, ["text", "richtext", "reference", "image"])
       |> validate_options()
       |> validate_reference_schema()
       |> validate_image_field_requirements(opts)
 
-    # Store repo in changeset private metadata
-    private = Map.get(changeset, :private, %{})
-
     changeset
-    |> Map.put(:private, Map.put(private, :plato_repo, repo))
-    |> set_reference_name()
+  end
+
+  defp normalize_name(attrs) when is_map(attrs) do
+    # Convert empty string name to nil to allow auto-generation for reference fields
+    case attrs do
+      %{"name" => ""} -> Map.put(attrs, "name", nil)
+      %{name: ""} -> Map.put(attrs, :name, nil)
+      _ -> attrs
+    end
   end
 
   defp validate_options(changeset) do

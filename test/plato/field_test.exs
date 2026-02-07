@@ -274,28 +274,68 @@ defmodule Plato.FieldTest do
   end
 
   describe "auto-generated reference field names" do
-    test "generates field name from referenced schema when name is nil" do
+    test "auto-generates field name from referenced schema when name is nil" do
       schema = create_schema(%{name: "post"})
       ref_schema = create_schema(%{name: "author"})
 
-      # Note: The implementation checks Plato.Repo.get directly, not the passed repo
-      # This test assumes we're using Plato.Repo as the test repo
       attrs = %{
         schema_id: schema.id,
         field_type: "reference",
         referenced_schema_id: ref_schema.id
       }
 
-      # The set_reference_name function will auto-generate the name
-      # However, name is still required, so this will fail validation
       changeset = Field.changeset(%Field{}, attrs)
-      # The validation requires name, so even with auto-generation it needs name
-      if changeset.valid? do
-        assert true
-      else
-        errors = errors_on(changeset)
-        assert Map.has_key?(errors, :name)
-      end
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :name) == "author"
+    end
+
+    test "auto-generates field name from referenced schema when name is empty string" do
+      schema = create_schema(%{name: "post"})
+      ref_schema = create_schema(%{name: "category"})
+
+      attrs = %{
+        schema_id: schema.id,
+        name: "",
+        field_type: "reference",
+        referenced_schema_id: ref_schema.id
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :name) == "category"
+    end
+
+    test "Field.create succeeds with nil name for reference field" do
+      schema = create_schema(%{name: "post"})
+      ref_schema = create_schema(%{name: "author"})
+
+      attrs = %{
+        schema_id: schema.id,
+        field_type: "reference",
+        referenced_schema_id: ref_schema.id
+      }
+
+      assert {:ok, field} = Field.create(attrs, Repo)
+      assert field.name == "author"
+      assert field.field_type == "reference"
+      assert field.referenced_schema_id == ref_schema.id
+    end
+
+    test "Field.create succeeds with empty string name for reference field" do
+      schema = create_schema(%{name: "blog_post"})
+      ref_schema = create_schema(%{name: "user"})
+
+      attrs = %{
+        schema_id: schema.id,
+        name: "",
+        field_type: "reference",
+        referenced_schema_id: ref_schema.id
+      }
+
+      assert {:ok, field} = Field.create(attrs, Repo)
+      assert field.name == "user"
+      assert field.field_type == "reference"
+      assert field.referenced_schema_id == ref_schema.id
     end
 
     test "explicit name takes precedence over auto-generated name" do
@@ -311,6 +351,36 @@ defmodule Plato.FieldTest do
 
       {:ok, field} = Field.create(attrs, Repo)
       assert field.name == "custom_author"
+    end
+
+    test "auto-generation fails gracefully if referenced schema doesn't exist" do
+      schema = create_schema(%{name: "post"})
+
+      attrs = %{
+        schema_id: schema.id,
+        field_type: "reference",
+        referenced_schema_id: 99999
+      }
+
+      changeset = Field.changeset(%Field{}, attrs)
+      # Should still fail validation because name is required and couldn't be auto-generated
+      refute changeset.valid?
+      assert %{name: ["can't be blank"]} = errors_on(changeset)
+    end
+
+    test "auto-generation works with string keys in attrs map" do
+      schema = create_schema(%{name: "post"})
+      ref_schema = create_schema(%{name: "tag"})
+
+      attrs = %{
+        "schema_id" => schema.id,
+        "name" => "",
+        "field_type" => "reference",
+        "referenced_schema_id" => ref_schema.id
+      }
+
+      assert {:ok, field} = Field.create(attrs, Repo)
+      assert field.name == "tag"
     end
   end
 
