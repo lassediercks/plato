@@ -230,7 +230,7 @@ defmodule Plato do
         {:error, :content_not_found}
 
       content ->
-        content = repo.preload(content, [schema: :fields])
+        content = repo.preload(content, schema: :fields)
         new_field_values = ContentResolver.prepare_field_values(attrs, content.schema)
         # Merge new values with existing ones to preserve fields not being updated
         merged_field_values = Map.merge(content.field_values, new_field_values)
@@ -305,7 +305,9 @@ defmodule Plato do
     config = Application.get_env(otp_app, :plato, [])
 
     case Keyword.fetch(config, :repo) do
-      {:ok, repo} -> repo
+      {:ok, repo} ->
+        repo
+
       :error ->
         raise ArgumentError, """
         OTP app #{inspect(otp_app)} has no :plato configuration with :repo.
@@ -403,7 +405,8 @@ defmodule Plato do
           # Update existing field if options changed
           if existing_field.options != field_options or
                (field_def.type == :reference and
-                  existing_field.referenced_schema_id != Map.get(field_attrs, :referenced_schema_id)) do
+                  existing_field.referenced_schema_id !=
+                    Map.get(field_attrs, :referenced_schema_id)) do
             existing_field
             |> Plato.Field.changeset(field_attrs)
             |> repo.update()
@@ -426,22 +429,23 @@ defmodule Plato do
       end
 
     # Add field-type specific options
-    type_specific_options = case field_type do
-      :text ->
-        # Extract multiline option for text fields
-        if Keyword.has_key?(opts, :multiline) do
-          %{"multiline" => Keyword.get(opts, :multiline)}
-        else
+    type_specific_options =
+      case field_type do
+        :text ->
+          # Extract multiline option for text fields
+          if Keyword.has_key?(opts, :multiline) do
+            %{"multiline" => Keyword.get(opts, :multiline)}
+          else
+            %{}
+          end
+
+        :reference ->
+          # No special options for reference fields currently
           %{}
-        end
 
-      :reference ->
-        # No special options for reference fields currently
-        %{}
-
-      _ ->
-        %{}
-    end
+        _ ->
+          %{}
+      end
 
     Map.merge(base_options, type_specific_options)
   end

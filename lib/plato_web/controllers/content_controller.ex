@@ -5,9 +5,10 @@ defmodule PlatoWeb.ContentController do
   def index(conn, _params) do
     schemas = repo(conn).all(Plato.Schema)
     fields_query = from(f in Plato.Field, order_by: [asc: f.position])
+
     contents =
       repo(conn).all(Plato.Content)
-      |> repo(conn).preload([schema: [fields: fields_query]])
+      |> repo(conn).preload(schema: [fields: fields_query])
 
     # Get count of content instances per schema
     content_counts =
@@ -28,7 +29,8 @@ defmodule PlatoWeb.ContentController do
       schemas: schemas,
       contents_with_titles: contents_with_titles,
       content_counts: content_counts,
-      base_path: base_path(conn))
+      base_path: base_path(conn)
+    )
   end
 
   # Private helper to extract title from content
@@ -38,7 +40,7 @@ defmodule PlatoWeb.ContentController do
       Enum.find(content.schema.fields, fn field ->
         Map.get(field.options, "as_title") == true
       end) ||
-      List.first(content.schema.fields)
+        List.first(content.schema.fields)
 
     case title_field do
       nil ->
@@ -76,7 +78,7 @@ defmodule PlatoWeb.ContentController do
 
       schema ->
         fields_query = from(f in Plato.Field, order_by: [asc: f.position])
-        schema = repo(conn).preload(schema, [fields: {fields_query, :referenced_schema}])
+        schema = repo(conn).preload(schema, fields: {fields_query, :referenced_schema})
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
         render(conn, :new, schema: schema, all_contents: all_contents, base_path: base_path(conn))
     end
@@ -96,7 +98,10 @@ defmodule PlatoWeb.ContentController do
 
       if existing_content do
         conn
-        |> put_flash(:error, "This schema is unique and already has content. You can only create one instance.")
+        |> put_flash(
+          :error,
+          "This schema is unique and already has content. You can only create one instance."
+        )
         |> redirect(to: "#{base_path(conn)}/content")
       else
         create_content(conn, schema_id, content_params, content_files)
@@ -121,7 +126,9 @@ defmodule PlatoWeb.ContentController do
     # Handle file uploads for image fields
     field_values =
       case handle_image_uploads(content_files, schema, otp_app) do
-        {:ok, image_values} -> Map.merge(field_values, image_values)
+        {:ok, image_values} ->
+          Map.merge(field_values, image_values)
+
         {:error, reason} ->
           conn
           |> put_flash(:error, "Image upload failed: #{reason}")
@@ -165,7 +172,8 @@ defmodule PlatoWeb.ContentController do
 
           if field && upload && upload.path do
             # Generate storage path
-            storage_path = generate_storage_path(otp_app, schema.name, field.name, upload.filename)
+            storage_path =
+              generate_storage_path(otp_app, schema.name, field.name, upload.filename)
 
             # Get adapter and upload file
             adapter = Keyword.get(storage_config, :adapter)
@@ -222,9 +230,17 @@ defmodule PlatoWeb.ContentController do
 
       content ->
         fields_query = from(f in Plato.Field, order_by: [asc: f.position])
-        content = repo(conn).preload(content, [schema: [fields: {fields_query, :referenced_schema}]])
+
+        content =
+          repo(conn).preload(content, schema: [fields: {fields_query, :referenced_schema}])
+
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
-        render(conn, :show, content: content, all_contents: all_contents, base_path: base_path(conn))
+
+        render(conn, :show,
+          content: content,
+          all_contents: all_contents,
+          base_path: base_path(conn)
+        )
     end
   end
 
@@ -237,9 +253,17 @@ defmodule PlatoWeb.ContentController do
 
       content ->
         fields_query = from(f in Plato.Field, order_by: [asc: f.position])
-        content = repo(conn).preload(content, [schema: [fields: {fields_query, :referenced_schema}]])
+
+        content =
+          repo(conn).preload(content, schema: [fields: {fields_query, :referenced_schema}])
+
         all_contents = repo(conn).all(Plato.Content) |> repo(conn).preload(:schema)
-        render(conn, :edit, content: content, all_contents: all_contents, base_path: base_path(conn))
+
+        render(conn, :edit,
+          content: content,
+          all_contents: all_contents,
+          base_path: base_path(conn)
+        )
     end
   end
 
@@ -273,7 +297,9 @@ defmodule PlatoWeb.ContentController do
         # Handle new image uploads
         field_values =
           case handle_image_uploads(content_files, schema, otp_app) do
-            {:ok, image_values} -> Map.merge(field_values, image_values)
+            {:ok, image_values} ->
+              Map.merge(field_values, image_values)
+
             {:error, reason} ->
               conn
               |> put_flash(:error, "Image upload failed: #{reason}")

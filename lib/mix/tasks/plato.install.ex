@@ -37,7 +37,8 @@ defmodule Mix.Tasks.Plato.Install do
         migration_files =
           files
           |> Enum.filter(&String.ends_with?(&1, ".exs"))
-          |> Enum.sort()  # IMPORTANT: Sort by filename to maintain order
+          # IMPORTANT: Sort by filename to maintain order
+          |> Enum.sort()
 
         Mix.shell().info("Migrations to copy (in order):")
         Enum.each(migration_files, &Mix.shell().info("  - #{&1}"))
@@ -118,6 +119,7 @@ defmodule Mix.Tasks.Plato.Install do
 
   defp calendar_timestamp do
     {{y, m, d}, {hh, mm, ss}} = :calendar.universal_time()
+
     "#{y}#{pad(m)}#{pad(d)}#{pad(hh)}#{pad(mm)}#{pad(ss)}"
     |> String.to_integer()
   end

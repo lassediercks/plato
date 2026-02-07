@@ -223,10 +223,11 @@ defmodule Plato.ContentResolverTest do
 
   describe "prepare_field_values/2" do
     test "converts field names to field IDs" do
-      schema = create_schema_with_fields(%{name: "article"}, [
-        %{name: "title", field_type: "text"},
-        %{name: "body", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "article"}, [
+          %{name: "title", field_type: "text"},
+          %{name: "body", field_type: "text"}
+        ])
 
       attrs = %{title: "Test Title", body: "Test Body"}
       result = ContentResolver.prepare_field_values(attrs, schema)
@@ -239,9 +240,10 @@ defmodule Plato.ContentResolverTest do
     end
 
     test "accepts string field names" do
-      schema = create_schema_with_fields(%{name: "page"}, [
-        %{name: "title", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "page"}, [
+          %{name: "title", field_type: "text"}
+        ])
 
       attrs = %{"title" => "String Key"}
       result = ContentResolver.prepare_field_values(attrs, schema)
@@ -251,9 +253,10 @@ defmodule Plato.ContentResolverTest do
     end
 
     test "accepts atom field names" do
-      schema = create_schema_with_fields(%{name: "page"}, [
-        %{name: "title", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "page"}, [
+          %{name: "title", field_type: "text"}
+        ])
 
       attrs = %{title: "Atom Key"}
       result = ContentResolver.prepare_field_values(attrs, schema)
@@ -304,9 +307,10 @@ defmodule Plato.ContentResolverTest do
     end
 
     test "converts all values to strings" do
-      schema = create_schema_with_fields(%{name: "test"}, [
-        %{name: "field1", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "test"}, [
+          %{name: "field1", field_type: "text"}
+        ])
 
       attrs = %{field1: 123}
       result = ContentResolver.prepare_field_values(attrs, schema)
@@ -316,9 +320,10 @@ defmodule Plato.ContentResolverTest do
     end
 
     test "ignores fields not in schema" do
-      schema = create_schema_with_fields(%{name: "test"}, [
-        %{name: "valid_field", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "test"}, [
+          %{name: "valid_field", field_type: "text"}
+        ])
 
       attrs = %{valid_field: "value", invalid_field: "ignored"}
       result = ContentResolver.prepare_field_values(attrs, schema)
@@ -329,9 +334,10 @@ defmodule Plato.ContentResolverTest do
     end
 
     test "handles empty attrs" do
-      schema = create_schema_with_fields(%{name: "test"}, [
-        %{name: "field1", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "test"}, [
+          %{name: "field1", field_type: "text"}
+        ])
 
       result = ContentResolver.prepare_field_values(%{}, schema)
 
@@ -373,10 +379,11 @@ defmodule Plato.ContentResolverTest do
     test "handles mixed field types" do
       author_schema = create_schema(%{name: "author"})
 
-      post_schema = create_schema_with_fields(%{name: "post"}, [
-        %{name: "title", field_type: "text"},
-        %{name: "body", field_type: "text"}
-      ])
+      post_schema =
+        create_schema_with_fields(%{name: "post"}, [
+          %{name: "title", field_type: "text"},
+          %{name: "body", field_type: "text"}
+        ])
 
       author_field =
         create_field(post_schema, %{

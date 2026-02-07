@@ -149,10 +149,11 @@ defmodule PlatoTest do
 
   describe "create_content/3" do
     test "creates content with field values" do
-      _schema = create_schema_with_fields(%{name: "article"}, [
-        %{name: "title", field_type: "text"},
-        %{name: "body", field_type: "text"}
-      ])
+      _schema =
+        create_schema_with_fields(%{name: "article"}, [
+          %{name: "title", field_type: "text"},
+          %{name: "body", field_type: "text"}
+        ])
 
       attrs = %{title: "New Article", body: "Article content"}
 
@@ -162,9 +163,10 @@ defmodule PlatoTest do
     end
 
     test "creates content with reference fields" do
-      author_schema = create_schema_with_fields(%{name: "author"}, [
-        %{name: "name", field_type: "text"}
-      ])
+      author_schema =
+        create_schema_with_fields(%{name: "author"}, [
+          %{name: "name", field_type: "text"}
+        ])
 
       name_field = Enum.find(author_schema.fields, &(&1.name == "name"))
       author_content = create_content(author_schema, %{"#{name_field.id}" => "Jane Doe"})
@@ -198,10 +200,11 @@ defmodule PlatoTest do
 
   describe "update_content/3" do
     test "updates existing content" do
-      schema = create_schema_with_fields(%{name: "page"}, [
-        %{name: "title", field_type: "text"},
-        %{name: "body", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "page"}, [
+          %{name: "title", field_type: "text"},
+          %{name: "body", field_type: "text"}
+        ])
 
       field_values = %{
         "#{Enum.at(schema.fields, 0).id}" => "Original Title",
@@ -210,7 +213,9 @@ defmodule PlatoTest do
 
       content = create_content(schema, field_values)
 
-      assert {:ok, updated} = Plato.update_content(content.id, %{title: "Updated Title"}, repo: Repo)
+      assert {:ok, updated} =
+               Plato.update_content(content.id, %{title: "Updated Title"}, repo: Repo)
+
       assert updated.title == "Updated Title"
       assert updated.body == "Original Body"
     end
@@ -220,12 +225,16 @@ defmodule PlatoTest do
     end
 
     test "updates reference fields" do
-      author1_schema = create_schema_with_fields(%{name: "author1"}, [
-        %{name: "name", field_type: "text"}
-      ])
+      author1_schema =
+        create_schema_with_fields(%{name: "author1"}, [
+          %{name: "name", field_type: "text"}
+        ])
 
-      author1 = create_content(author1_schema, %{"#{Enum.at(author1_schema.fields, 0).id}" => "Author 1"})
-      author2 = create_content(author1_schema, %{"#{Enum.at(author1_schema.fields, 0).id}" => "Author 2"})
+      author1 =
+        create_content(author1_schema, %{"#{Enum.at(author1_schema.fields, 0).id}" => "Author 1"})
+
+      author2 =
+        create_content(author1_schema, %{"#{Enum.at(author1_schema.fields, 0).id}" => "Author 2"})
 
       post_schema = create_schema(%{name: "article"})
       title_field = create_field(post_schema, %{name: "title", field_type: "text"})
@@ -243,7 +252,9 @@ defmodule PlatoTest do
           "#{author_field.id}" => "#{author1.id}"
         })
 
-      assert {:ok, updated} = Plato.update_content(content.id, %{author_id: author2.id}, repo: Repo)
+      assert {:ok, updated} =
+               Plato.update_content(content.id, %{author_id: author2.id}, repo: Repo)
+
       assert updated.author.name == "Author 2"
     end
   end
@@ -253,19 +264,19 @@ defmodule PlatoTest do
       use Plato.SchemaBuilder
 
       schema "homepage", unique: true do
-        field :title, :text
-        field :tagline, :text
+        field(:title, :text)
+        field(:tagline, :text)
       end
 
       schema "blog_post" do
-        field :title, :text
-        field :body, :text, multiline: true
-        field :author, :reference, to: "author"
+        field(:title, :text)
+        field(:body, :text, multiline: true)
+        field(:author, :reference, to: "author")
       end
 
       schema "author" do
-        field :name, :text
-        field :bio, :text, multiline: true
+        field(:name, :text)
+        field(:bio, :text, multiline: true)
       end
     end
 
@@ -322,8 +333,8 @@ defmodule PlatoTest do
         use Plato.SchemaBuilder
 
         schema "post" do
-          field :title, :text
-          field :category, :reference, to: "category"
+          field(:title, :text)
+          field(:category, :reference, to: "category")
         end
       end
 
@@ -356,7 +367,7 @@ defmodule PlatoTest do
         use Plato.SchemaBuilder
 
         schema "article" do
-          field :content, :text
+          field(:content, :text)
         end
       end
 
@@ -372,7 +383,7 @@ defmodule PlatoTest do
         use Plato.SchemaBuilder
 
         schema "article" do
-          field :content, :text, multiline: true
+          field(:content, :text, multiline: true)
         end
       end
 

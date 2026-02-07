@@ -87,7 +87,7 @@ defmodule Plato.MixProject do
       # x-release-please-end
       source_url: "https://github.com/lassediercks/plato",
       groups_for_extras: [
-        "Project": ["README.md", "CHANGELOG.md", "LICENSE"]
+        Project: ["README.md", "CHANGELOG.md", "LICENSE"]
       ]
     ]
   end

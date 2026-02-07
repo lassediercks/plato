@@ -32,17 +32,19 @@ defmodule Plato.HelpersTest do
       field = create_field(schema, %{name: "title", field_type: "text"})
       create_content(schema, %{"#{field.id}" => "Hero Title"})
 
-      result = plato_render("hero", :title, [repo: Repo], fn value ->
-        "Rendered: #{value}"
-      end)
+      result =
+        plato_render("hero", :title, [repo: Repo], fn value ->
+          "Rendered: #{value}"
+        end)
 
       assert result == "Rendered: Hero Title"
     end
 
     test "returns nil for non-existent content" do
-      result = plato_render("missing", :field, [repo: Repo], fn value ->
-        "Value: #{value}"
-      end)
+      result =
+        plato_render("missing", :field, [repo: Repo], fn value ->
+          "Value: #{value}"
+        end)
 
       assert result == nil
     end
@@ -55,9 +57,10 @@ defmodule Plato.HelpersTest do
       create_content(schema, %{"#{field.id}" => "Post 1"})
       create_content(schema, %{"#{field.id}" => "Post 2"})
 
-      results = plato_list("post", [repo: Repo], fn post ->
-        post.title
-      end)
+      results =
+        plato_list("post", [repo: Repo], fn post ->
+          post.title
+        end)
 
       assert length(results) == 2
       assert "Post 1" in results
@@ -65,9 +68,10 @@ defmodule Plato.HelpersTest do
     end
 
     test "returns empty list for non-existent schema" do
-      results = plato_list("missing", [repo: Repo], fn post ->
-        post.title
-      end)
+      results =
+        plato_list("missing", [repo: Repo], fn post ->
+          post.title
+        end)
 
       assert results == []
     end

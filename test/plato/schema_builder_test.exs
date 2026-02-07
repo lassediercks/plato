@@ -7,13 +7,13 @@ defmodule Plato.SchemaBuilderTest do
       use Plato.SchemaBuilder
 
       schema "test-schema", unique: true do
-        field :title, :text
-        field :body, :text, multiline: true
+        field(:title, :text)
+        field(:body, :text, multiline: true)
       end
 
       schema "blog-post" do
-        field :title, :text
-        field :author, :reference, to: "author"
+        field(:title, :text)
+        field(:author, :reference, to: "author")
       end
     end
 
@@ -57,9 +57,9 @@ defmodule Plato.SchemaBuilderTest do
       use Plato.SchemaBuilder
 
       schema "article" do
-        field :title, :text, as_title: true
-        field :excerpt, :text, multiline: true
-        field :cover, :image
+        field(:title, :text, as_title: true)
+        field(:excerpt, :text, multiline: true)
+        field(:cover, :image)
       end
     end
 

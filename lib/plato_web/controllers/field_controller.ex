@@ -33,7 +33,9 @@ defmodule PlatoWeb.FieldController do
     Enum.with_index(field_ids, 1)
     |> Enum.each(fn {field_id, position} ->
       case repo(conn).get(Plato.Field, field_id) do
-        nil -> :ok
+        nil ->
+          :ok
+
         field ->
           field
           |> Plato.Field.changeset(%{position: position}, otp_app: otp_app(conn))
@@ -112,7 +114,9 @@ defmodule PlatoWeb.FieldController do
     end
   end
 
-  defp normalize_field_params(%{"field_type" => "reference", "referenced_schema_id" => ""} = params) do
+  defp normalize_field_params(
+         %{"field_type" => "reference", "referenced_schema_id" => ""} = params
+       ) do
     Map.put(params, "referenced_schema_id", nil)
   end
 
@@ -201,8 +205,9 @@ defmodule PlatoWeb.FieldController do
       # Get all content for this schema
       contents =
         repo(conn).all(
-          from c in Plato.Content,
-          where: c.schema_id == ^schema_id
+          from(c in Plato.Content,
+            where: c.schema_id == ^schema_id
+          )
         )
         |> repo(conn).preload(:schema)
 
@@ -234,8 +239,9 @@ defmodule PlatoWeb.FieldController do
       # Remove field data from all content instances
       contents =
         repo(conn).all(
-          from c in Plato.Content,
-          where: c.schema_id == ^schema_id
+          from(c in Plato.Content,
+            where: c.schema_id == ^schema_id
+          )
         )
 
       Enum.each(contents, fn content ->

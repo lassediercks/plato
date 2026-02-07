@@ -125,7 +125,7 @@ defmodule Plato.ContentTest do
       field = create_field(schema, %{name: "title", field_type: "text"})
       content = create_content(schema, %{"#{field.id}" => "Value"})
 
-      content = Repo.preload(content, [schema: :fields])
+      content = Repo.preload(content, schema: :fields)
       assert content.schema.name == "test"
       assert length(content.schema.fields) == 1
       assert hd(content.schema.fields).name == "title"

@@ -24,7 +24,7 @@ defmodule Plato.ContentResolver do
   @spec resolve_fields(Plato.Content.t(), module()) :: map()
   def resolve_fields(%Plato.Content{} = content, repo) do
     # Ensure schema and fields are preloaded
-    content = repo.preload(content, [schema: [fields: :referenced_schema]])
+    content = repo.preload(content, schema: [fields: :referenced_schema])
 
     # Convert field values from ID-keyed map to name-keyed map
     content.schema.fields
@@ -51,7 +51,7 @@ defmodule Plato.ContentResolver do
           content ->
             # Recursively resolve referenced content fields
             content
-            |> repo.preload([schema: :fields])
+            |> repo.preload(schema: :fields)
             |> resolve_fields(repo)
         end
 

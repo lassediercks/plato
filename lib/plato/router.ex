@@ -51,7 +51,7 @@ defmodule Plato.Router do
       scope path, alias: false, as: false do
         # Forward all requests to the Plato admin plug
         # Pass the mount path through opts so AdminPlug can use it
-        forward "/", Plato.AdminPlug, Keyword.put(opts, :base_path, path)
+        forward("/", Plato.AdminPlug, Keyword.put(opts, :base_path, path))
       end
     end
   end
