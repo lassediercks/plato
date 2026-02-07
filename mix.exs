@@ -5,7 +5,7 @@ defmodule Plato.MixProject do
     [
       app: :plato,
       # x-release-please-start-version
-      version: "0.0.19",
+      version: "0.0.20",
       # x-release-please-end
       elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -74,7 +74,7 @@ defmodule Plato.MixProject do
       main: "readme",
       extras: ["README.md", "CHANGELOG.md", "LICENSE"],
       # x-release-please-start-version
-      source_ref: "v0.0.19",
+      source_ref: "v0.0.20",
       # x-release-please-end
       source_url: "https://github.com/lassediercks/plato",
       groups_for_extras: [
