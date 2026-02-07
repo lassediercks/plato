@@ -26,7 +26,7 @@ Add `plato` to your list of dependencies in `mix.exs`:
 def deps do
   [
     # x-release-please-start-version
-    {:plato, "~> 0.0.18"}
+    {:plato, "~> 0.0.19"}
     # x-release-please-end
   ]
 end
@@ -52,7 +52,7 @@ Add these dependencies to your `mix.exs` if you want to use image fields:
 def deps do
   [
     # x-release-please-start-version
-    {:plato, "~> 0.0.18"},
+    {:plato, "~> 0.0.19"},
     # x-release-please-end
 
     # Required for image field support

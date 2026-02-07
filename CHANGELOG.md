@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.19](https://github.com/lassediercks/plato/compare/v0.0.18...v0.0.19) (2026-02-07)
+
+
+### Bug Fixes
+
+* back to dev docs ([3511f6e](https://github.com/lassediercks/plato/commit/3511f6e06f790043ae8b409e1e5eb43d50ef3637))
+* docs again ([370ead5](https://github.com/lassediercks/plato/commit/370ead5ddb3dff8bd8d90a4ad42e9c8443bba59a))
+* publish workflow ([953d4f1](https://github.com/lassediercks/plato/commit/953d4f15a365a4afc4e8ac9d61460873e5a29656))
+
 ## [0.0.18](https://github.com/lassediercks/plato/compare/v0.0.17...v0.0.18) (2026-02-06)
 
 
