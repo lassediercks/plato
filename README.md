@@ -4,6 +4,8 @@ A schema-driven headless CMS for Phoenix applications. Create dynamic content ty
 
 [![Hex.pm](https://img.shields.io/hexpm/v/plato.svg)](https://hex.pm/packages/plato)
 [![Documentation](https://img.shields.io/badge/docs-hexpm-blue.svg)](https://hexdocs.pm/plato)
+[![CI](https://github.com/lassediercks/plato/workflows/CI/badge.svg)](https://github.com/lassediercks/plato/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/lassediercks/plato/branch/main/graph/badge.svg)](https://codecov.io/gh/lassediercks/plato)
 
 ## Features
 
