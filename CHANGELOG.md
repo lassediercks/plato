@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.23](https://github.com/lassediercks/plato/compare/v0.0.22...v0.0.23) (2026-02-07)
+
+
+### Bug Fixes
+
+* field reference bug ([4ee6165](https://github.com/lassediercks/plato/commit/4ee616538e8c634e7d3cedf20f2edcc357ae4af6))
+
 ## [0.0.22](https://github.com/lassediercks/plato/compare/v0.0.21...v0.0.22) (2026-02-07)
 
 
