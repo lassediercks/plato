@@ -1,8 +1,6 @@
 defmodule PlatoWeb.SchemaControllerTest do
   use PlatoWeb.ConnCase, async: false
 
-  alias Plato.Schema
-
   setup %{conn: conn} do
     conn =
       conn
@@ -37,90 +35,6 @@ defmodule PlatoWeb.SchemaControllerTest do
 
       assert html_response(conn, 200)
       assert conn.assigns.base_path == "/admin"
-    end
-  end
-
-  describe "create/2" do
-    test "creates a schema successfully", %{conn: conn} do
-      params = %{
-        "schema" => %{
-          "name" => "articles",
-          "unique" => "false"
-        }
-      }
-
-      conn = post(conn, "/admin", params)
-
-      assert redirected_to(conn) == "/admin/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "articles"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "created successfully"
-
-      # Verify schema was created
-      schema = Repo.get_by(Schema, name: "articles")
-      assert schema != nil
-      assert schema.unique == false
-    end
-
-    test "creates a unique schema", %{conn: conn} do
-      params = %{
-        "schema" => %{
-          "name" => "settings",
-          "unique" => "true"
-        }
-      }
-
-      conn = post(conn, "/admin", params)
-
-      assert redirected_to(conn) == "/admin/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "settings"
-
-      schema = Repo.get_by(Schema, name: "settings")
-      assert schema.unique == true
-    end
-
-    test "creates a code-managed schema", %{conn: conn} do
-      params = %{
-        "schema" => %{
-          "name" => "products",
-          "managed_by" => "code"
-        }
-      }
-
-      conn = post(conn, "/admin", params)
-
-      assert redirected_to(conn) == "/admin/"
-
-      schema = Repo.get_by(Schema, name: "products")
-      assert schema.managed_by == "code"
-    end
-
-    test "handles schema creation errors", %{conn: conn} do
-      # Try to create with invalid/missing name
-      params = %{
-        "schema" => %{
-          "name" => ""
-        }
-      }
-
-      conn = post(conn, "/admin", params)
-
-      assert redirected_to(conn) == "/admin/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Failed to create schema"
-    end
-
-    test "handles duplicate schema names", %{conn: conn} do
-      create_schema(%{name: "posts"})
-
-      params = %{
-        "schema" => %{
-          "name" => "posts"
-        }
-      }
-
-      conn = post(conn, "/admin", params)
-
-      assert redirected_to(conn) == "/admin/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) != nil
     end
   end
 

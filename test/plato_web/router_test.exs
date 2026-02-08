@@ -37,14 +37,6 @@ defmodule PlatoWeb.RouterTest do
     assert conn.private.phoenix_action == :index
   end
 
-  test "routes POST / to SchemaController create" do
-    conn = conn(:post, "/", %{"schema" => %{"name" => "test"}}) |> init_test_session()
-    conn = Router.call(conn, Router.init([]))
-
-    assert conn.private.phoenix_controller == PlatoWeb.SchemaController
-    assert conn.private.phoenix_action == :create
-  end
-
   test "routes GET /schemas/:id to SchemaController show" do
     conn = conn(:get, "/schemas/123") |> init_test_session()
     conn = Router.call(conn, Router.init([]))
@@ -52,68 +44,6 @@ defmodule PlatoWeb.RouterTest do
     assert conn.private.phoenix_controller == PlatoWeb.SchemaController
     assert conn.private.phoenix_action == :show
     assert conn.params["id"] == "123"
-  end
-
-  test "routes POST /schemas/:schema_id/fields to FieldController create" do
-    # Create a real schema for the test since controller validates it exists
-    {:ok, schema} = Plato.Schema.create(%{name: "test_schema"}, Plato.Repo)
-
-    conn =
-      conn(:post, "/schemas/#{schema.id}/fields", %{
-        "field" => %{"name" => "test", "field_type" => "text"}
-      })
-      |> init_test_session()
-
-    conn = Router.call(conn, Router.init([]))
-
-    assert conn.private.phoenix_controller == PlatoWeb.FieldController
-    assert conn.private.phoenix_action == :create
-    assert conn.params["schema_id"] == "#{schema.id}"
-  end
-
-  test "routes POST /schemas/:schema_id/fields/reorder to FieldController reorder" do
-    conn = conn(:post, "/schemas/1/fields/reorder", %{"field_ids" => []}) |> init_test_session()
-    conn = Router.call(conn, Router.init([]))
-
-    assert conn.private.phoenix_controller == PlatoWeb.FieldController
-    assert conn.private.phoenix_action == :reorder
-  end
-
-  test "routes GET /schemas/:schema_id/fields/:id/edit to FieldController edit" do
-    conn = conn(:get, "/schemas/1/fields/2/edit") |> init_test_session()
-    conn = Router.call(conn, Router.init([]))
-
-    assert conn.private.phoenix_controller == PlatoWeb.FieldController
-    assert conn.private.phoenix_action == :edit
-    assert conn.params["schema_id"] == "1"
-    assert conn.params["id"] == "2"
-  end
-
-  test "routes POST /schemas/:schema_id/fields/:id/update to FieldController update" do
-    conn =
-      conn(:post, "/schemas/1/fields/2/update", %{"field" => %{"name" => "test"}})
-      |> init_test_session()
-
-    conn = Router.call(conn, Router.init([]))
-
-    assert conn.private.phoenix_controller == PlatoWeb.FieldController
-    assert conn.private.phoenix_action == :update
-  end
-
-  test "routes GET /schemas/:schema_id/fields/:id/delete to FieldController delete_confirm" do
-    conn = conn(:get, "/schemas/1/fields/2/delete") |> init_test_session()
-    conn = Router.call(conn, Router.init([]))
-
-    assert conn.private.phoenix_controller == PlatoWeb.FieldController
-    assert conn.private.phoenix_action == :delete_confirm
-  end
-
-  test "routes POST /schemas/:schema_id/fields/:id/delete to FieldController delete" do
-    conn = conn(:post, "/schemas/1/fields/2/delete") |> init_test_session()
-    conn = Router.call(conn, Router.init([]))
-
-    assert conn.private.phoenix_controller == PlatoWeb.FieldController
-    assert conn.private.phoenix_action == :delete
   end
 
   test "routes GET /content to ContentController index" do

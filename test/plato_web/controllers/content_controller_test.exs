@@ -1,7 +1,7 @@
 defmodule PlatoWeb.ContentControllerTest do
   use PlatoWeb.ConnCase, async: true
 
-  alias Plato.{Schema, Field, Content}
+  alias Plato.Content
 
   setup %{conn: conn} do
     # Set required conn assigns that controllers expect
