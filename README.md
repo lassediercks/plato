@@ -28,7 +28,7 @@ Add `plato` to your dependencies in `mix.exs`:
 def deps do
   [
     # x-release-please-start-version
-    {:plato, "~> 0.0.23"}
+    {:plato, "~> 0.0.24"}
     # x-release-please-end
   ]
 end
@@ -174,7 +174,7 @@ To use image fields, you need S3-compatible storage. Add these dependencies to `
 def deps do
   [
     # x-release-please-start-version
-    {:plato, "~> 0.0.23"},
+    {:plato, "~> 0.0.24"},
     # x-release-please-end
 
 
