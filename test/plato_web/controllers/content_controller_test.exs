@@ -50,11 +50,15 @@ defmodule PlatoWeb.ContentControllerTest do
     test "extracts title from field marked as_title", %{conn: conn} do
       schema = create_schema(%{name: "products"})
       field1 = create_field(schema, %{name: "sku", field_type: "text"})
-      field2 = create_field(schema, %{name: "name", field_type: "text", options: %{"as_title" => true}})
-      content = create_content(schema, %{
-        to_string(field1.id) => "ABC123",
-        to_string(field2.id) => "Product Name"
-      })
+
+      field2 =
+        create_field(schema, %{name: "name", field_type: "text", options: %{"as_title" => true}})
+
+      content =
+        create_content(schema, %{
+          to_string(field1.id) => "ABC123",
+          to_string(field2.id) => "Product Name"
+        })
 
       conn = get(conn, "/admin/content")
 
@@ -67,10 +71,12 @@ defmodule PlatoWeb.ContentControllerTest do
       schema = create_schema(%{name: "notes"})
       field1 = create_field(schema, %{name: "body", field_type: "text", position: 0})
       field2 = create_field(schema, %{name: "author", field_type: "text", position: 1})
-      content = create_content(schema, %{
-        to_string(field1.id) => "Note body",
-        to_string(field2.id) => "John"
-      })
+
+      content =
+        create_content(schema, %{
+          to_string(field1.id) => "Note body",
+          to_string(field2.id) => "John"
+        })
 
       conn = get(conn, "/admin/content")
 
@@ -87,18 +93,23 @@ defmodule PlatoWeb.ContentControllerTest do
 
       # Create main schema with reference field
       post_schema = create_schema(%{name: "posts"})
-      ref_field = create_field(post_schema, %{
-        name: "author",
-        field_type: "reference",
-        options: %{"referenced_schema_id" => author_schema.id}
-      })
+
+      ref_field =
+        create_field(post_schema, %{
+          name: "author",
+          field_type: "reference",
+          options: %{"referenced_schema_id" => author_schema.id}
+        })
+
       post_content = create_content(post_schema, %{to_string(ref_field.id) => author_content.id})
 
       conn = get(conn, "/admin/content")
 
       assert html_response(conn, 200)
       # Find the post content in results
-      {^post_content, title} = Enum.find(conn.assigns.contents_with_titles, fn {c, _} -> c.id == post_content.id end)
+      {^post_content, title} =
+        Enum.find(conn.assigns.contents_with_titles, fn {c, _} -> c.id == post_content.id end)
+
       assert title == "Jane Doe"
     end
 
@@ -118,11 +129,13 @@ defmodule PlatoWeb.ContentControllerTest do
     test "extracts filename from image field", %{conn: conn} do
       schema = create_schema(%{name: "gallery"})
       img_field = create_field(schema, %{name: "photo", field_type: "image"})
+
       image_data = %{
         "url" => "https://example.com/photo.jpg",
         "filename" => "vacation.jpg",
         "storage_path" => "plato/gallery/photo/vacation.jpg"
       }
+
       content = create_content(schema, %{to_string(img_field.id) => image_data})
 
       conn = get(conn, "/admin/content")
@@ -166,6 +179,7 @@ defmodule PlatoWeb.ContentControllerTest do
     test "preloads schema fields with referenced schemas", %{conn: conn} do
       ref_schema = create_schema(%{name: "authors"})
       schema = create_schema(%{name: "posts"})
+
       create_field(schema, %{
         name: "author",
         field_type: "reference",
@@ -257,11 +271,13 @@ defmodule PlatoWeb.ContentControllerTest do
       author_content = create_content(author_schema, %{to_string(author_field.id) => "Jane"})
 
       post_schema = create_schema(%{name: "posts"})
-      ref_field = create_field(post_schema, %{
-        name: "author",
-        field_type: "reference",
-        options: %{"referenced_schema_id" => author_schema.id}
-      })
+
+      ref_field =
+        create_field(post_schema, %{
+          name: "author",
+          field_type: "reference",
+          options: %{"referenced_schema_id" => author_schema.id}
+        })
 
       params = %{
         "schema_id" => post_schema.id,
@@ -287,7 +303,7 @@ defmodule PlatoWeb.ContentControllerTest do
 
       # Should redirect back to new form (though this may pass validation in current implementation)
       assert redirected_to(conn) == "/admin/content" or
-             redirected_to(conn) == "/admin/content/new?schema_id=#{schema.id}"
+               redirected_to(conn) == "/admin/content/new?schema_id=#{schema.id}"
     end
   end
 
@@ -314,11 +330,14 @@ defmodule PlatoWeb.ContentControllerTest do
     test "preloads schema fields with references", %{conn: conn} do
       ref_schema = create_schema(%{name: "categories"})
       schema = create_schema(%{name: "posts"})
-      ref_field = create_field(schema, %{
-        name: "category",
-        field_type: "reference",
-        options: %{"referenced_schema_id" => ref_schema.id}
-      })
+
+      ref_field =
+        create_field(schema, %{
+          name: "category",
+          field_type: "reference",
+          options: %{"referenced_schema_id" => ref_schema.id}
+        })
+
       content = create_content(schema, %{to_string(ref_field.id) => "1"})
 
       conn = get(conn, "/admin/content/#{content.id}")
@@ -401,10 +420,12 @@ defmodule PlatoWeb.ContentControllerTest do
       schema = create_schema(%{name: "posts"})
       field1 = create_field(schema, %{name: "title", field_type: "text"})
       field2 = create_field(schema, %{name: "body", field_type: "text"})
-      content = create_content(schema, %{
-        to_string(field1.id) => "Title",
-        to_string(field2.id) => "Body"
-      })
+
+      content =
+        create_content(schema, %{
+          to_string(field1.id) => "Title",
+          to_string(field2.id) => "Body"
+        })
 
       # Update only field1
       params = %{

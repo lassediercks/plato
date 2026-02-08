@@ -145,11 +145,13 @@ defmodule PlatoWeb.SchemaControllerTest do
     test "preloads referenced schemas for reference fields", %{conn: conn} do
       ref_schema = create_schema(%{name: "authors"})
       schema = create_schema(%{name: "posts"})
-      field = create_field(schema, %{
-        name: "author",
-        field_type: "reference",
-        options: %{"referenced_schema_id" => ref_schema.id}
-      })
+
+      field =
+        create_field(schema, %{
+          name: "author",
+          field_type: "reference",
+          options: %{"referenced_schema_id" => ref_schema.id}
+        })
 
       # Set referenced_schema_id properly
       field
@@ -229,8 +231,9 @@ defmodule PlatoWeb.SchemaControllerTest do
     end
 
     test "defaults to / when not set" do
-      conn = Phoenix.ConnTest.build_conn()
-      |> Plug.Conn.assign(:plato_otp_app, :plato)
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> Plug.Conn.assign(:plato_otp_app, :plato)
 
       conn = get(conn, "/admin")
 

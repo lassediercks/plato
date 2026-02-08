@@ -384,7 +384,8 @@ defmodule PlatoWeb.FieldControllerTest do
         "schema_id" => schema.id,
         "id" => field.id,
         "field" => %{
-          "name" => ""  # Invalid: empty name
+          # Invalid: empty name
+          "name" => ""
         }
       }
 
@@ -477,10 +478,11 @@ defmodule PlatoWeb.FieldControllerTest do
       field1 = create_field(schema, %{name: "title", field_type: "text"})
       field2 = create_field(schema, %{name: "body", field_type: "text"})
 
-      content = create_content(schema, %{
-        to_string(field1.id) => "Title",
-        to_string(field2.id) => "Body"
-      })
+      content =
+        create_content(schema, %{
+          to_string(field1.id) => "Title",
+          to_string(field2.id) => "Body"
+        })
 
       conn = post(conn, "/admin/schemas/#{schema.id}/fields/#{field1.id}/delete")
 
@@ -524,8 +526,11 @@ defmodule PlatoWeb.FieldControllerTest do
       assert redirected_to(conn) == "/admin/schemas/#{schema.id}"
 
       # Verify field data removed from all content
-      assert Map.has_key?(Repo.get(Content, content1.id).field_values, to_string(field.id)) == false
-      assert Map.has_key?(Repo.get(Content, content2.id).field_values, to_string(field.id)) == false
+      assert Map.has_key?(Repo.get(Content, content1.id).field_values, to_string(field.id)) ==
+               false
+
+      assert Map.has_key?(Repo.get(Content, content2.id).field_values, to_string(field.id)) ==
+               false
     end
   end
 end

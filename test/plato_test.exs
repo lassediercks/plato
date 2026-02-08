@@ -209,10 +209,11 @@ defmodule PlatoTest do
       sku_field = Enum.find(schema.fields, &(&1.name == "sku"))
       title_field = Enum.find(schema.fields, &(&1.name == "title"))
 
-      content = create_content(schema, %{
-        "#{sku_field.id}" => "ABC-123",
-        "#{title_field.id}" => "Cool Product"
-      })
+      content =
+        create_content(schema, %{
+          "#{sku_field.id}" => "ABC-123",
+          "#{title_field.id}" => "Cool Product"
+        })
 
       assert {:ok, result} = Plato.get_content_by_field("product", "sku", "ABC-123", repo: Repo)
       assert result.sku == "ABC-123"
@@ -221,39 +222,43 @@ defmodule PlatoTest do
 
     test "returns error when schema not found" do
       assert {:error, :schema_not_found} =
-        Plato.get_content_by_field("nonexistent", "field", "value", repo: Repo)
+               Plato.get_content_by_field("nonexistent", "field", "value", repo: Repo)
     end
 
     test "returns error when field not found" do
-      schema = create_schema_with_fields(%{name: "page"}, [
-        %{name: "title", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "page"}, [
+          %{name: "title", field_type: "text"}
+        ])
 
       assert {:error, :field_not_found} =
-        Plato.get_content_by_field("page", "nonexistent_field", "value", repo: Repo)
+               Plato.get_content_by_field("page", "nonexistent_field", "value", repo: Repo)
     end
 
     test "returns error when content not found" do
-      schema = create_schema_with_fields(%{name: "page"}, [
-        %{name: "slug", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "page"}, [
+          %{name: "slug", field_type: "text"}
+        ])
 
       assert {:error, :content_not_found} =
-        Plato.get_content_by_field("page", "slug", "nonexistent", repo: Repo)
+               Plato.get_content_by_field("page", "slug", "nonexistent", repo: Repo)
     end
 
     test "works with otp_app configuration" do
       Application.put_env(:test_app, :plato, repo: Repo)
 
-      schema = create_schema_with_fields(%{name: "user"}, [
-        %{name: "email", field_type: "text"}
-      ])
+      schema =
+        create_schema_with_fields(%{name: "user"}, [
+          %{name: "email", field_type: "text"}
+        ])
 
       email_field = Enum.find(schema.fields, &(&1.name == "email"))
       _content = create_content(schema, %{"#{email_field.id}" => "test@example.com"})
 
       assert {:ok, result} =
-        Plato.get_content_by_field("user", "email", "test@example.com", otp_app: :test_app)
+               Plato.get_content_by_field("user", "email", "test@example.com", otp_app: :test_app)
+
       assert result.email == "test@example.com"
 
       Application.delete_env(:test_app, :plato)

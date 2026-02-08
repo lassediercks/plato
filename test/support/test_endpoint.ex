@@ -5,7 +5,7 @@ defmodule PlatoWeb.TestEndpoint do
   use Phoenix.Endpoint, otp_app: :plato
 
   # Configure error rendering - must come before other plugs
-  plug Phoenix.CodeReloader
+  plug(Phoenix.CodeReloader)
 
   @session_options [
     store: :cookie,

@@ -61,7 +61,10 @@ defmodule PlatoWeb.ContentController do
               referenced_content ->
                 # Preload schema with fields to allow recursive title resolution
                 fields_query = from(f in Plato.Field, order_by: [asc: f.position])
-                referenced_content = repo.preload(referenced_content, schema: [fields: fields_query])
+
+                referenced_content =
+                  repo.preload(referenced_content, schema: [fields: fields_query])
+
                 get_content_title(referenced_content, repo)
             end
 

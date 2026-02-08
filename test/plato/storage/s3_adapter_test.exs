@@ -255,11 +255,17 @@ defmodule Plato.Storage.S3AdapterTest do
 
       # Call through put to test config building
       # We can't directly test private functions, but we can verify behavior
-      result = S3Adapter.put(%MockUpload{
-        path: __ENV__.file,  # Use this file as test data
-        filename: "test.jpg",
-        content_type: "image/jpeg"
-      }, "test/path.jpg", config)
+      result =
+        S3Adapter.put(
+          %MockUpload{
+            # Use this file as test data
+            path: __ENV__.file,
+            filename: "test.jpg",
+            content_type: "image/jpeg"
+          },
+          "test/path.jpg",
+          config
+        )
 
       # Should process config correctly (even if ExAws fails)
       assert is_tuple(result) and (elem(result, 0) == :ok or elem(result, 0) == :error)
@@ -274,11 +280,16 @@ defmodule Plato.Storage.S3AdapterTest do
         region: "us-east-1"
       ]
 
-      result = S3Adapter.put(%MockUpload{
-        path: __ENV__.file,
-        filename: "test.jpg",
-        content_type: "image/jpeg"
-      }, "test/path.jpg", config)
+      result =
+        S3Adapter.put(
+          %MockUpload{
+            path: __ENV__.file,
+            filename: "test.jpg",
+            content_type: "image/jpeg"
+          },
+          "test/path.jpg",
+          config
+        )
 
       assert is_tuple(result) and (elem(result, 0) == :ok or elem(result, 0) == :error)
     end
@@ -293,11 +304,16 @@ defmodule Plato.Storage.S3AdapterTest do
       ]
 
       # When uploading (internal operation), should use internal_endpoint
-      result = S3Adapter.put(%MockUpload{
-        path: __ENV__.file,
-        filename: "test.jpg",
-        content_type: "image/jpeg"
-      }, "test/path.jpg", config)
+      result =
+        S3Adapter.put(
+          %MockUpload{
+            path: __ENV__.file,
+            filename: "test.jpg",
+            content_type: "image/jpeg"
+          },
+          "test/path.jpg",
+          config
+        )
 
       assert is_tuple(result) and (elem(result, 0) == :ok or elem(result, 0) == :error)
     end
@@ -326,11 +342,16 @@ defmodule Plato.Storage.S3AdapterTest do
       ]
 
       # Should use default region
-      result = S3Adapter.put(%MockUpload{
-        path: __ENV__.file,
-        filename: "test.jpg",
-        content_type: "image/jpeg"
-      }, "test/path.jpg", config)
+      result =
+        S3Adapter.put(
+          %MockUpload{
+            path: __ENV__.file,
+            filename: "test.jpg",
+            content_type: "image/jpeg"
+          },
+          "test/path.jpg",
+          config
+        )
 
       assert is_tuple(result) and (elem(result, 0) == :ok or elem(result, 0) == :error)
     end
@@ -366,7 +387,9 @@ defmodule Plato.Storage.S3AdapterTest do
       # Test the complete workflow (structure only, as we don't have real S3)
       # 1. Put file
       put_result = S3Adapter.put(upload, storage_path, config)
-      assert is_tuple(put_result) and (elem(put_result, 0) == :ok or elem(put_result, 0) == :error)
+
+      assert is_tuple(put_result) and
+               (elem(put_result, 0) == :ok or elem(put_result, 0) == :error)
 
       # 2. Get URL
       {:ok, url} = S3Adapter.get_url(storage_path, config)
@@ -379,7 +402,9 @@ defmodule Plato.Storage.S3AdapterTest do
 
       # 4. Delete
       delete_result = S3Adapter.delete(storage_path, config)
-      assert delete_result == :ok or (is_tuple(delete_result) and elem(delete_result, 0) == :error)
+
+      assert delete_result == :ok or
+               (is_tuple(delete_result) and elem(delete_result, 0) == :error)
     end
 
     test "handles SeaweedFS configuration", %{upload: upload} do
