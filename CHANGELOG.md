@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.24](https://github.com/lassediercks/plato/compare/v0.0.23...v0.0.24) (2026-02-08)
+
+
+### Features
+
+* remove ui schema creation and modification ([2e51734](https://github.com/lassediercks/plato/commit/2e517347ed2c0e8abe2f72be7480fa7304f505ac))
+
+
+### Bug Fixes
+
+* more specs ([4733ef6](https://github.com/lassediercks/plato/commit/4733ef66de3707357f97566b63ce7bc2494b17d8))
+
 ## [0.0.23](https://github.com/lassediercks/plato/compare/v0.0.22...v0.0.23) (2026-02-07)
 
 
