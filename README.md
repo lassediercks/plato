@@ -1,6 +1,6 @@
 # Plato
 
-A schema-driven headless CMS for Phoenix applications. Create dynamic content types, manage relationships, and query content with a clean API. Includes a mountable admin UI for content management.
+A schema driven cms for phoenix applications
 
 [![Hex.pm](https://img.shields.io/hexpm/v/plato.svg)](https://hex.pm/packages/plato)
 [![Documentation](https://img.shields.io/badge/docs-hexpm-blue.svg)](https://hexdocs.pm/plato)

@@ -49,72 +49,17 @@
     <div class="fields-section">
       <h2>Fields</h2>
 
-      <%= if @schema.managed_by == "code" do %>
-        <div class="info-box" style="margin-bottom: 20px;">
-          <p><strong>This schema is managed by code.</strong></p>
-          <p>Fields are defined in your application code and cannot be modified through the UI. You can still create and edit content for this schema.</p>
-        </div>
-      <% else %>
-        <form action={"#{@base_path}/schemas/#{@schema.id}/fields"} method="post" class="add-field-form">
-        <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
-        <div class="form-group">
-          <label for="field_type">Add:</label>
-          <select id="field_type" name="field[field_type]" required>
-            <option value="">Select type...</option>
-            <option value="text">Text Field</option>
-            <option value="richtext">Rich Text Field</option>
-            <option value="image">Image</option>
-            <option value="reference">Schema Reference</option>
-          </select>
-        </div>
-
-        <div class="form-group" id="text-field-group" style="display: none;">
-          <label for="field_name">Field Name:</label>
-          <input
-            type="text"
-            id="field_name"
-            name="field[name]"
-            placeholder="Field name"
-          />
-        </div>
-
-        <div class="form-group" id="text-options-group" style="display: none;">
-          <label style="display: flex; align-items: center; gap: 8px;">
-            <input
-              type="checkbox"
-              id="field_multiline"
-              name="field[multiline]"
-              value="true"
-            />
-            <span>Multiline (use textarea)</span>
-          </label>
-        </div>
-
-        <div class="form-group" id="reference-schema-group" style="display: none;">
-          <label for="referenced_schema_id">Select Schema:</label>
-          <select id="referenced_schema_id" name="field[referenced_schema_id]">
-            <option value="">Select a schema...</option>
-            <%= for s <- @all_schemas do %>
-              <%= if s.id != @schema.id do %>
-                <option value={s.id}><%= s.name %></option>
-              <% end %>
-            <% end %>
-          </select>
-        </div>
-
-        <button type="submit">Add</button>
-      </form>
-      <% end %>
+      <div class="info-box" style="margin-bottom: 20px;">
+        <p><strong>Schema fields are defined in code.</strong></p>
+        <p>Fields cannot be modified through the UI. You can create and edit content for this schema.</p>
+      </div>
 
       <%= if Enum.empty?(@schema.fields) do %>
-        <p class="empty-state">No fields yet. Add one above!</p>
+        <p class="empty-state">No fields defined.</p>
       <% else %>
-        <ul class="fields-list" id="sortable-fields">
+        <ul class="fields-list">
           <%= for field <- @schema.fields do %>
-            <li draggable={if @schema.managed_by != "code", do: "true", else: "false"} data-field-id={field.id} class="sortable-field-item">
-              <%= if @schema.managed_by != "code" do %>
-                <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
-              <% end %>
+            <li class="field-item">
               <div class="field-info">
                 <%= if field.field_type == "reference" do %>
                   <span class="field-name">
@@ -139,126 +84,11 @@
                   <span class="badge" style="background-color: #e3f2fd; color: #1565c0; font-size: 0.75rem; margin-left: 8px;">title</span>
                 <% end %>
               </div>
-              <%= if @schema.managed_by != "code" do %>
-                <div class="field-actions">
-                  <a href={"#{@base_path}/schemas/#{@schema.id}/fields/#{field.id}/edit"} class="btn-secondary" style="margin-right: 8px;">Edit</a>
-                  <a href={"#{@base_path}/schemas/#{@schema.id}/fields/#{field.id}/delete"} class="btn-delete">Delete</a>
-                </div>
-              <% end %>
             </li>
           <% end %>
         </ul>
       <% end %>
     </div>
-
-    <script>
-      const fieldTypeSelect = document.getElementById('field_type');
-      if (fieldTypeSelect) {
-        fieldTypeSelect.addEventListener('change', function() {
-          const textGroup = document.getElementById('text-field-group');
-          const textOptionsGroup = document.getElementById('text-options-group');
-          const refGroup = document.getElementById('reference-schema-group');
-          const nameInput = document.getElementById('field_name');
-          const refSelect = document.getElementById('referenced_schema_id');
-
-          textGroup.style.display = 'none';
-          textOptionsGroup.style.display = 'none';
-          refGroup.style.display = 'none';
-          nameInput.required = false;
-          refSelect.required = false;
-
-          if (this.value === 'text') {
-            textGroup.style.display = 'block';
-            textOptionsGroup.style.display = 'block';
-            nameInput.required = true;
-          } else if (this.value === 'richtext') {
-            textGroup.style.display = 'block';
-            nameInput.required = true;
-          } else if (this.value === 'image') {
-            textGroup.style.display = 'block';
-            nameInput.required = true;
-          } else if (this.value === 'reference') {
-            refGroup.style.display = 'block';
-            refSelect.required = true;
-          }
-        });
-      }
-
-      // Field drag and drop functionality
-      (function() {
-        const sortableList = document.getElementById('sortable-fields');
-        if (!sortableList) return;
-
-        let draggedItem = null;
-
-        sortableList.addEventListener('dragstart', function(e) {
-          if (e.target.classList.contains('sortable-field-item') && e.target.getAttribute('draggable') === 'true') {
-            draggedItem = e.target;
-            e.target.style.opacity = '0.5';
-          }
-        });
-
-        sortableList.addEventListener('dragend', function(e) {
-          if (e.target.classList.contains('sortable-field-item')) {
-            e.target.style.opacity = '1';
-            draggedItem = null;
-          }
-        });
-
-        sortableList.addEventListener('dragover', function(e) {
-          e.preventDefault();
-          const afterElement = getDragAfterElement(sortableList, e.clientY);
-          if (afterElement == null) {
-            sortableList.appendChild(draggedItem);
-          } else {
-            sortableList.insertBefore(draggedItem, afterElement);
-          }
-        });
-
-        sortableList.addEventListener('drop', function(e) {
-          e.preventDefault();
-          saveFieldOrder();
-        });
-
-        function getDragAfterElement(container, y) {
-          const draggableElements = [...container.querySelectorAll('.sortable-field-item[draggable="true"]:not(.dragging)')];
-
-          return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-
-            if (offset < 0 && offset > closest.offset) {
-              return { offset: offset, element: child };
-            } else {
-              return closest;
-            }
-          }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-
-        function saveFieldOrder() {
-          const fieldIds = [...sortableList.querySelectorAll('.sortable-field-item')]
-            .map(item => item.dataset.fieldId);
-
-          fetch('<%= @base_path %>/schemas/<%= @schema.id %>/fields/reorder', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': '<%= Plug.CSRFProtection.get_csrf_token() %>'
-            },
-            body: JSON.stringify({ field_ids: fieldIds })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              console.log('Field order saved successfully');
-            }
-          })
-          .catch(error => {
-            console.error('Error saving field order:', error);
-          });
-        }
-      })();
-    </script>
 
     <div class="actions">
       <a href={@base_path} class="btn-secondary">← Back to List</a>
