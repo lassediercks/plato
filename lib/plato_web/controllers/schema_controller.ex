@@ -12,12 +12,12 @@ defmodule PlatoWeb.SchemaController do
       {:ok, schema} ->
         conn
         |> put_flash(:info, "Schema '#{schema.name}' created successfully!")
-        |> redirect(to: base_path(conn))
+        |> redirect(to: "#{base_path(conn)}/")
 
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "Failed to create schema")
-        |> redirect(to: base_path(conn))
+        |> redirect(to: "#{base_path(conn)}/")
     end
   end
 
@@ -26,7 +26,7 @@ defmodule PlatoWeb.SchemaController do
       nil ->
         conn
         |> put_flash(:error, "Schema not found")
-        |> redirect(to: base_path(conn))
+        |> redirect(to: "#{base_path(conn)}/")
 
       schema ->
         fields_query = from(f in Plato.Field, order_by: [asc: f.position])
@@ -47,6 +47,11 @@ defmodule PlatoWeb.SchemaController do
 
   # Private helper to get base path from conn assigns
   defp base_path(conn) do
-    conn.assigns[:plato_base_path] || "/"
+    # Return empty string for root path to avoid double slashes in URLs
+    case conn.assigns[:plato_base_path] do
+      nil -> ""
+      "/" -> ""
+      path -> path
+    end
   end
 end

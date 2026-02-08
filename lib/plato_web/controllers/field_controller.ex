@@ -276,5 +276,12 @@ defmodule PlatoWeb.FieldController do
   end
 
   # Private helper to get base_path from conn assigns
-  defp base_path(conn), do: conn.assigns[:plato_base_path] || "/"
+  defp base_path(conn) do
+    # Return empty string for root path to avoid double slashes in URLs
+    case conn.assigns[:plato_base_path] do
+      nil -> ""
+      "/" -> ""
+      path -> path
+    end
+  end
 end

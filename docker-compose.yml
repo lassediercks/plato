@@ -30,20 +30,31 @@ services:
       - .:/app
       - app_deps:/app/deps
       - app_build:/app/_build
+      - ./testlogs:/app/testlogs
     command: >
       sh -c "
-        echo '=== Installing Hex and Rebar ===' &&
-        mix local.hex --force &&
-        mix local.rebar --force &&
-        echo '=== Getting dependencies ===' &&
-        mix deps.get &&
-        echo '=== Setting up test database ===' &&
-        MIX_ENV=test mix ecto.create &&
-        MIX_ENV=test mix ecto.migrate &&
-        echo '=== Running Plato library tests ===' &&
-        mix test &&
-        echo '=== ✅ All tests passed! ===' &&
-        echo 'Plato library is ready to use.'
+        mkdir -p /app/testlogs &&
+        (
+          echo '=== Installing Hex and Rebar ===' &&
+          mix local.hex --force &&
+          mix local.rebar --force &&
+          echo '=== Getting dependencies ===' &&
+          mix deps.get &&
+          echo '=== Compiling project ===' &&
+          MIX_ENV=test mix compile &&
+          echo '=== Setting up test database ===' &&
+          MIX_ENV=test mix ecto.create &&
+          MIX_ENV=test mix ecto.migrate &&
+          echo '=== Running Plato library tests with coverage ===' &&
+          mix coveralls.html &&
+          echo '=== ✅ All tests passed! ===' &&
+          echo 'Coverage report generated at cover/excoveralls.html' &&
+          echo '' &&
+          echo '=== Coverage Summary ===' &&
+          mix coveralls | tail -20
+        ) 2>&1 | tee /app/testlogs/test-run-\$(date +%Y%m%d-%H%M%S).log &&
+        echo '' &&
+        echo '=== Test log saved to testlogs/ ==='
       "
 
 volumes:

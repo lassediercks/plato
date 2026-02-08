@@ -1,5 +1,12 @@
 import Config
 
+# Configure PlatoWeb.Endpoint error rendering
+config :plato, PlatoWeb.Endpoint,
+  render_errors: [
+    formats: [html: PlatoWeb.ErrorHTML],
+    layout: false
+  ]
+
 # Configure the test repo when running tests
 if Mix.env() == :test do
   # Get database config from environment or use defaults
@@ -16,6 +23,16 @@ if Mix.env() == :test do
     start_repo: true,
     ecto_repos: [Plato.Repo]
 
+  # Configure test endpoint
+  config :plato, PlatoWeb.TestEndpoint,
+    http: [port: 4002],
+    server: false,
+    secret_key_base: String.duplicate("a", 64),
+    render_errors: [
+      formats: [html: PlatoWeb.ErrorHTML],
+      layout: false
+    ]
+
   # Configure test storage with dummy credentials
   # This is for testing purposes only - use environment variables in production
   config :plato,
@@ -26,6 +43,11 @@ if Mix.env() == :test do
       secret_access_key: "test-secret-key",
       region: "us-east-1"
     ]
+
+  # Configure ExAws to use mock HTTP client in tests
+  config :ex_aws,
+    http_client: Plato.MockHTTPClient,
+    json_codec: Jason
 
   config :logger, level: :warning
 end

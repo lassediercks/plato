@@ -8,6 +8,9 @@ erl_crash.dump
 # Coverage
 /cover/
 
+# Test logs
+/testlogs/
+
 # Documentation
 /doc/
 

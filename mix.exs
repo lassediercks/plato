@@ -51,6 +51,7 @@ defmodule Plato.MixProject do
       {:jason, "~> 1.4"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
+      {:mox, "~> 1.0", only: :test},
       # Optional dependencies for image field support
       {:ex_aws, "~> 2.5", optional: true},
       {:ex_aws_s3, "~> 2.5", optional: true},

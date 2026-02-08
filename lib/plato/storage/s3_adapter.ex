@@ -165,7 +165,11 @@ defmodule Plato.Storage.S3Adapter do
       uri = URI.parse(endpoint)
       scheme = uri.scheme || "http"
       host = uri.host || "localhost"
-      port = uri.port || 8333
+
+      # Check if port was explicitly specified in the endpoint URL
+      # If endpoint is just "http://localhost", use our default 8333
+      # If it has an explicit port like "http://localhost:9000", use that
+      port = if String.contains?(endpoint, ":#{uri.port}"), do: uri.port, else: 8333
 
       # Build the URL manually
       url = "#{scheme}://#{host}:#{port}/#{bucket}/#{storage_path}"
@@ -240,10 +244,15 @@ defmodule Plato.Storage.S3Adapter do
         # Parse the endpoint URL to extract host, port, and scheme
         uri = URI.parse(endpoint_url)
 
+        # Check if port was explicitly specified in the endpoint URL
+        # If endpoint is just "http://localhost", use our default 8333
+        # If it has an explicit port like "http://localhost:9000", use that
+        port = if String.contains?(endpoint_url, ":#{uri.port}"), do: uri.port, else: 8333
+
         base_config
         |> Keyword.put(:scheme, uri.scheme || "http")
         |> Keyword.put(:host, uri.host || "localhost")
-        |> Keyword.put(:port, uri.port || 8333)
+        |> Keyword.put(:port, port)
     end
   end
 end

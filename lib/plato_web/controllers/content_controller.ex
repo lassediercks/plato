@@ -55,8 +55,14 @@ defmodule PlatoWeb.ContentController do
         cond do
           field.field_type == "reference" && field_value ->
             case repo.get(Plato.Content, field_value) do
-              nil -> field_value
-              referenced_content -> get_content_title(referenced_content, repo)
+              nil ->
+                field_value
+
+              referenced_content ->
+                # Preload schema with fields to allow recursive title resolution
+                fields_query = from(f in Plato.Field, order_by: [asc: f.position])
+                referenced_content = repo.preload(referenced_content, schema: [fields: fields_query])
+                get_content_title(referenced_content, repo)
             end
 
           field.field_type == "image" && is_map(field_value) ->
@@ -335,5 +341,12 @@ defmodule PlatoWeb.ContentController do
   end
 
   # Private helper to get base_path from conn assigns
-  defp base_path(conn), do: conn.assigns[:plato_base_path] || "/"
+  defp base_path(conn) do
+    # Return empty string for root path to avoid double slashes in URLs
+    case conn.assigns[:plato_base_path] do
+      nil -> ""
+      "/" -> ""
+      path -> path
+    end
+  end
 end
