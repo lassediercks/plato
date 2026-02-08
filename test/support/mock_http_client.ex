@@ -5,7 +5,7 @@ defmodule Plato.MockHTTPClient do
   @behaviour ExAws.Request.HttpClient
 
   @impl true
-  def request(method, url, body, headers, _opts) do
+  def request(method, _url, _body, _headers, _opts) do
     # Return appropriate mock responses based on the operation
     cond do
       # HEAD requests for exists? check

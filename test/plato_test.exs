@@ -226,7 +226,7 @@ defmodule PlatoTest do
     end
 
     test "returns error when field not found" do
-      schema =
+      _schema =
         create_schema_with_fields(%{name: "page"}, [
           %{name: "title", field_type: "text"}
         ])
@@ -236,7 +236,7 @@ defmodule PlatoTest do
     end
 
     test "returns error when content not found" do
-      schema =
+      _schema =
         create_schema_with_fields(%{name: "page"}, [
           %{name: "slug", field_type: "text"}
         ])

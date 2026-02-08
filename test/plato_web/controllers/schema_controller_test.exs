@@ -1,5 +1,5 @@
 defmodule PlatoWeb.SchemaControllerTest do
-  use PlatoWeb.ConnCase, async: true
+  use PlatoWeb.ConnCase, async: false
 
   alias Plato.Schema
 
@@ -168,8 +168,8 @@ defmodule PlatoWeb.SchemaControllerTest do
 
     test "loads all schemas for reference field dropdown", %{conn: conn} do
       schema1 = create_schema(%{name: "posts"})
-      schema2 = create_schema(%{name: "authors"})
-      schema3 = create_schema(%{name: "categories"})
+      _schema2 = create_schema(%{name: "authors"})
+      _schema3 = create_schema(%{name: "categories"})
 
       conn = get(conn, "/admin/schemas/#{schema1.id}")
 

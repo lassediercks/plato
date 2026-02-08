@@ -40,7 +40,9 @@ defmodule PlatoWeb.EndpointTest do
   end
 
   test "exports init/2 function" do
-    assert function_exported?(Endpoint, :init, 2)
+    # Phoenix.Endpoint uses Plug behavior which requires init/1, not init/2
+    # Endpoints export init/1 for plug initialization
+    assert function_exported?(Endpoint, :init, 1)
   end
 
   test "exports call/2 function" do

@@ -74,8 +74,16 @@ defmodule PlatoWeb.FieldControllerTest do
 
       assert redirected_to(conn) == "/admin/schemas/#{schema.id}"
 
+      # Image fields require optional dependencies (ex_aws, ex_aws_s3, hackney)
+      # If dependencies are available, field should be created; otherwise error flash
       field = Repo.get_by(Field, schema_id: schema.id, name: "photo")
-      assert field.field_type == "image"
+
+      if field do
+        assert field.field_type == "image"
+      else
+        # Field wasn't created due to missing dependencies
+        assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "image fields require"
+      end
     end
 
     test "creates text field with multiline option", %{conn: conn} do

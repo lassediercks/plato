@@ -38,7 +38,7 @@ defmodule PlatoWeb.RouterTest do
   end
 
   test "routes POST / to SchemaController create" do
-    conn = conn(:post, "/") |> init_test_session()
+    conn = conn(:post, "/", %{"schema" => %{"name" => "test"}}) |> init_test_session()
     conn = Router.call(conn, Router.init([]))
 
     assert conn.private.phoenix_controller == PlatoWeb.SchemaController
@@ -55,16 +55,24 @@ defmodule PlatoWeb.RouterTest do
   end
 
   test "routes POST /schemas/:schema_id/fields to FieldController create" do
-    conn = conn(:post, "/schemas/1/fields") |> init_test_session()
+    # Create a real schema for the test since controller validates it exists
+    {:ok, schema} = Plato.Schema.create(%{name: "test_schema"}, Plato.Repo)
+
+    conn =
+      conn(:post, "/schemas/#{schema.id}/fields", %{
+        "field" => %{"name" => "test", "field_type" => "text"}
+      })
+      |> init_test_session()
+
     conn = Router.call(conn, Router.init([]))
 
     assert conn.private.phoenix_controller == PlatoWeb.FieldController
     assert conn.private.phoenix_action == :create
-    assert conn.params["schema_id"] == "1"
+    assert conn.params["schema_id"] == "#{schema.id}"
   end
 
   test "routes POST /schemas/:schema_id/fields/reorder to FieldController reorder" do
-    conn = conn(:post, "/schemas/1/fields/reorder") |> init_test_session()
+    conn = conn(:post, "/schemas/1/fields/reorder", %{"field_ids" => []}) |> init_test_session()
     conn = Router.call(conn, Router.init([]))
 
     assert conn.private.phoenix_controller == PlatoWeb.FieldController
@@ -82,7 +90,10 @@ defmodule PlatoWeb.RouterTest do
   end
 
   test "routes POST /schemas/:schema_id/fields/:id/update to FieldController update" do
-    conn = conn(:post, "/schemas/1/fields/2/update") |> init_test_session()
+    conn =
+      conn(:post, "/schemas/1/fields/2/update", %{"field" => %{"name" => "test"}})
+      |> init_test_session()
+
     conn = Router.call(conn, Router.init([]))
 
     assert conn.private.phoenix_controller == PlatoWeb.FieldController
@@ -114,7 +125,9 @@ defmodule PlatoWeb.RouterTest do
   end
 
   test "routes GET /content/new to ContentController new" do
-    conn = conn(:get, "/content/new") |> init_test_session()
+    # Create a schema for the new content form
+    {:ok, schema} = Plato.Schema.create(%{name: "test_schema"}, Plato.Repo)
+    conn = conn(:get, "/content/new", %{"schema_id" => "#{schema.id}"}) |> init_test_session()
     conn = Router.call(conn, Router.init([]))
 
     assert conn.private.phoenix_controller == PlatoWeb.ContentController
@@ -122,7 +135,13 @@ defmodule PlatoWeb.RouterTest do
   end
 
   test "routes POST /content to ContentController create" do
-    conn = conn(:post, "/content") |> init_test_session()
+    # Create a schema for the content to belong to
+    {:ok, schema} = Plato.Schema.create(%{name: "test_schema"}, Plato.Repo)
+
+    conn =
+      conn(:post, "/content", %{"schema_id" => "#{schema.id}", "content" => %{}})
+      |> init_test_session()
+
     conn = Router.call(conn, Router.init([]))
 
     assert conn.private.phoenix_controller == PlatoWeb.ContentController

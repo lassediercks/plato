@@ -24,7 +24,15 @@ defmodule Plato.MixProject do
         "coveralls.html": :test,
         "coveralls.lcov": :test
       ]
-    ]
+    ] ++ listeners()
+  end
+
+  defp listeners do
+    if Mix.env() in [:dev, :test] do
+      [listeners: [Phoenix.CodeReloader]]
+    else
+      []
+    end
   end
 
   # Specifies which paths to compile per environment.
