@@ -219,6 +219,156 @@ defmodule Plato.ContentResolverTest do
       assert result.author.name == "Author"
       assert result.category.name == "Tech"
     end
+
+    test "resolves reference field with array of IDs (multiple: true)" do
+      # Create tag schema and multiple tags
+      tag_schema = create_schema(%{name: "tag"})
+      tag_name_field = create_field(tag_schema, %{name: "name", field_type: "text"})
+
+      tag1 = create_content(tag_schema, %{"#{tag_name_field.id}" => "Elixir"})
+      tag2 = create_content(tag_schema, %{"#{tag_name_field.id}" => "Phoenix"})
+      tag3 = create_content(tag_schema, %{"#{tag_name_field.id}" => "CMS"})
+
+      # Create post schema with tags reference field
+      post_schema = create_schema(%{name: "post"})
+      title_field = create_field(post_schema, %{name: "title", field_type: "text"})
+
+      tags_field =
+        create_field(post_schema, %{
+          name: "tags",
+          field_type: "reference",
+          referenced_schema_id: tag_schema.id,
+          options: %{"multiple" => true}
+        })
+
+      # Create post with array of tag IDs
+      post_content =
+        create_content(post_schema, %{
+          "#{title_field.id}" => "My Post",
+          "#{tags_field.id}" => ["#{tag1.id}", "#{tag2.id}", "#{tag3.id}"]
+        })
+
+      result = ContentResolver.resolve_fields(post_content, Repo)
+
+      assert result.title == "My Post"
+      assert is_list(result.tags)
+      assert length(result.tags) == 3
+
+      tag_names = Enum.map(result.tags, & &1.name) |> Enum.sort()
+      assert tag_names == ["CMS", "Elixir", "Phoenix"]
+    end
+
+    test "handles empty array for multiple references" do
+      tag_schema = create_schema(%{name: "tag"})
+
+      post_schema = create_schema(%{name: "post"})
+      title_field = create_field(post_schema, %{name: "title", field_type: "text"})
+
+      tags_field =
+        create_field(post_schema, %{
+          name: "tags",
+          field_type: "reference",
+          referenced_schema_id: tag_schema.id,
+          options: %{"multiple" => true}
+        })
+
+      post_content =
+        create_content(post_schema, %{
+          "#{title_field.id}" => "Post Without Tags",
+          "#{tags_field.id}" => []
+        })
+
+      result = ContentResolver.resolve_fields(post_content, Repo)
+
+      assert result.title == "Post Without Tags"
+      assert result.tags == []
+    end
+
+    test "filters out invalid IDs from array of references" do
+      tag_schema = create_schema(%{name: "tag"})
+      tag_name_field = create_field(tag_schema, %{name: "name", field_type: "text"})
+
+      tag1 = create_content(tag_schema, %{"#{tag_name_field.id}" => "Valid Tag"})
+
+      post_schema = create_schema(%{name: "post"})
+      title_field = create_field(post_schema, %{name: "title", field_type: "text"})
+
+      tags_field =
+        create_field(post_schema, %{
+          name: "tags",
+          field_type: "reference",
+          referenced_schema_id: tag_schema.id,
+          options: %{"multiple" => true}
+        })
+
+      # Create post with mix of valid and invalid IDs
+      post_content =
+        create_content(post_schema, %{
+          "#{title_field.id}" => "My Post",
+          "#{tags_field.id}" => ["#{tag1.id}", "99999", "invalid"]
+        })
+
+      result = ContentResolver.resolve_fields(post_content, Repo)
+
+      assert result.title == "My Post"
+      assert is_list(result.tags)
+      assert length(result.tags) == 1
+      assert hd(result.tags).name == "Valid Tag"
+    end
+
+    test "handles nested multiple references" do
+      # Create tag schema
+      tag_schema = create_schema(%{name: "tag"})
+      tag_name_field = create_field(tag_schema, %{name: "name", field_type: "text"})
+
+      tag1 = create_content(tag_schema, %{"#{tag_name_field.id}" => "Tag 1"})
+      tag2 = create_content(tag_schema, %{"#{tag_name_field.id}" => "Tag 2"})
+
+      # Create author schema with multiple tags
+      author_schema = create_schema(%{name: "author"})
+      author_name_field = create_field(author_schema, %{name: "name", field_type: "text"})
+
+      author_tags_field =
+        create_field(author_schema, %{
+          name: "interests",
+          field_type: "reference",
+          referenced_schema_id: tag_schema.id,
+          options: %{"multiple" => true}
+        })
+
+      author =
+        create_content(author_schema, %{
+          "#{author_name_field.id}" => "Jane Doe",
+          "#{author_tags_field.id}" => ["#{tag1.id}", "#{tag2.id}"]
+        })
+
+      # Create post referencing the author (who has multiple interests)
+      post_schema = create_schema(%{name: "post"})
+      title_field = create_field(post_schema, %{name: "title", field_type: "text"})
+
+      author_field =
+        create_field(post_schema, %{
+          name: "author",
+          field_type: "reference",
+          referenced_schema_id: author_schema.id
+        })
+
+      post =
+        create_content(post_schema, %{
+          "#{title_field.id}" => "My Post",
+          "#{author_field.id}" => "#{author.id}"
+        })
+
+      result = ContentResolver.resolve_fields(post, Repo)
+
+      assert result.title == "My Post"
+      assert result.author.name == "Jane Doe"
+      assert is_list(result.author.interests)
+      assert length(result.author.interests) == 2
+
+      interest_names = Enum.map(result.author.interests, & &1.name) |> Enum.sort()
+      assert interest_names == ["Tag 1", "Tag 2"]
+    end
   end
 
   describe "prepare_field_values/2" do

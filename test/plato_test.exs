@@ -187,6 +187,56 @@ defmodule PlatoTest do
       assert content.author.name == "Jane Doe"
     end
 
+    test "creates content with multiple references (array)" do
+      tag_schema =
+        create_schema_with_fields(%{name: "tag"}, [
+          %{name: "name", field_type: "text"}
+        ])
+
+      name_field = Enum.find(tag_schema.fields, &(&1.name == "name"))
+      tag1 = create_content(tag_schema, %{"#{name_field.id}" => "Elixir"})
+      tag2 = create_content(tag_schema, %{"#{name_field.id}" => "Phoenix"})
+      tag3 = create_content(tag_schema, %{"#{name_field.id}" => "CMS"})
+
+      post_schema = create_schema(%{name: "blog_post"})
+      create_field(post_schema, %{name: "title", field_type: "text"})
+
+      tags_field =
+        create_field(post_schema, %{
+          name: "tags",
+          field_type: "reference",
+          referenced_schema_id: tag_schema.id,
+          options: %{"multiple" => true}
+        })
+
+      # Store array directly in field_values for API-level creation
+      attrs = %{
+        title: "My Post About Elixir",
+        tags: [tag1.id, tag2.id, tag3.id]
+      }
+
+      # Need to use raw field creation since API expects atoms
+      schema = Repo.preload(post_schema, :fields)
+      title_field = Enum.find(schema.fields, &(&1.name == "title"))
+
+      field_values = %{
+        "#{title_field.id}" => "My Post About Elixir",
+        "#{tags_field.id}" => ["#{tag1.id}", "#{tag2.id}", "#{tag3.id}"]
+      }
+
+      {:ok, content} =
+        Plato.Content.create(%{schema_id: post_schema.id, field_values: field_values}, Repo)
+
+      # Retrieve and resolve
+      assert {:ok, resolved} = Plato.get_content_by_id(content.id, repo: Repo)
+      assert resolved.title == "My Post About Elixir"
+      assert is_list(resolved.tags)
+      assert length(resolved.tags) == 3
+
+      tag_names = Enum.map(resolved.tags, & &1.name) |> Enum.sort()
+      assert tag_names == ["CMS", "Elixir", "Phoenix"]
+    end
+
     test "returns error for non-existent schema" do
       assert {:error, :schema_not_found} =
                Plato.create_content("nonexistent", %{}, repo: Repo)
@@ -324,6 +374,54 @@ defmodule PlatoTest do
 
       assert updated.author.name == "Author 2"
     end
+
+    test "updates multiple references (array)" do
+      tag_schema =
+        create_schema_with_fields(%{name: "update_tag"}, [
+          %{name: "name", field_type: "text"}
+        ])
+
+      name_field = Enum.find(tag_schema.fields, &(&1.name == "name"))
+      tag1 = create_content(tag_schema, %{"#{name_field.id}" => "Tag 1"})
+      tag2 = create_content(tag_schema, %{"#{name_field.id}" => "Tag 2"})
+      tag3 = create_content(tag_schema, %{"#{name_field.id}" => "Tag 3"})
+
+      post_schema = create_schema(%{name: "update_post"})
+      title_field = create_field(post_schema, %{name: "title", field_type: "text"})
+
+      tags_field =
+        create_field(post_schema, %{
+          name: "tags",
+          field_type: "reference",
+          referenced_schema_id: tag_schema.id,
+          options: %{"multiple" => true}
+        })
+
+      # Create content with initial tags
+      content =
+        create_content(post_schema, %{
+          "#{title_field.id}" => "My Post",
+          "#{tags_field.id}" => ["#{tag1.id}", "#{tag2.id}"]
+        })
+
+      # Update to different set of tags
+      updated_values = %{
+        "#{tags_field.id}" => ["#{tag2.id}", "#{tag3.id}"]
+      }
+
+      {:ok, updated_content} =
+        content
+        |> Plato.Content.changeset(%{field_values: updated_values})
+        |> Repo.update()
+
+      # Retrieve and verify
+      assert {:ok, resolved} = Plato.get_content_by_id(updated_content.id, repo: Repo)
+      assert is_list(resolved.tags)
+      assert length(resolved.tags) == 2
+
+      tag_names = Enum.map(resolved.tags, & &1.name) |> Enum.sort()
+      assert tag_names == ["Tag 2", "Tag 3"]
+    end
   end
 
   describe "sync_schemas/2" do
@@ -427,6 +525,33 @@ defmodule PlatoTest do
       bio_field = Enum.find(author.fields, &(&1.name == "bio"))
 
       assert bio_field.options == %{"multiline" => true}
+    end
+
+    test "syncs multiple option for reference fields" do
+      defmodule MultipleRefSchemas do
+        use Plato.SchemaBuilder
+
+        schema "blog-post" do
+          field(:title, :text)
+          field(:tags, :reference, to: "tag", multiple: true)
+        end
+
+        schema "tag" do
+          field(:name, :text)
+        end
+      end
+
+      assert :ok = Plato.sync_schemas(MultipleRefSchemas, repo: Repo)
+
+      blog_post = Repo.get_by(Schema, name: "blog-post") |> Repo.preload(:fields)
+      tags_field = Enum.find(blog_post.fields, &(&1.name == "tags"))
+
+      assert tags_field != nil
+      assert tags_field.field_type == "reference"
+      assert tags_field.options == %{"multiple" => true}
+
+      tag_schema = Repo.get_by(Schema, name: "tag")
+      assert tags_field.referenced_schema_id == tag_schema.id
     end
 
     test "updates field options on re-sync" do

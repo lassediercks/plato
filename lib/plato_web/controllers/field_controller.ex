@@ -151,8 +151,32 @@ defmodule PlatoWeb.FieldController do
     |> Map.put("options", options)
   end
 
+  defp extract_field_options(%{"field_type" => "reference"} = params) do
+    # Extract multiple and as_title options for reference fields
+    options = %{}
+
+    options =
+      case Map.get(params, "multiple") do
+        "true" -> Map.put(options, "multiple", true)
+        "on" -> Map.put(options, "multiple", true)
+        _ -> options
+      end
+
+    options =
+      case Map.get(params, "as_title") do
+        "true" -> Map.put(options, "as_title", true)
+        "on" -> Map.put(options, "as_title", true)
+        _ -> options
+      end
+
+    params
+    |> Map.delete("multiple")
+    |> Map.delete("as_title")
+    |> Map.put("options", options)
+  end
+
   defp extract_field_options(params) do
-    # Extract as_title option for non-text fields
+    # Extract as_title option for non-text, non-reference fields
     options = %{}
 
     options =
@@ -191,8 +215,21 @@ defmodule PlatoWeb.FieldController do
         options
       end
 
+    # Handle multiple for reference fields
+    options =
+      if field.field_type == "reference" do
+        case Map.get(params, "multiple") do
+          "true" -> Map.put(options, "multiple", true)
+          "on" -> Map.put(options, "multiple", true)
+          _ -> options
+        end
+      else
+        options
+      end
+
     params
     |> Map.delete("multiline")
+    |> Map.delete("multiple")
     |> Map.delete("as_title")
     |> Map.put("options", options)
   end

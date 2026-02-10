@@ -40,8 +40,24 @@ defmodule Plato.ContentResolver do
 
   defp resolve_field_value(%{field_type: "text"}, value, _repo), do: value
 
+  # Handle multiple references (array)
+  defp resolve_field_value(%{field_type: "reference"}, value, repo) when is_list(value) do
+    Enum.map(value, fn content_id_str ->
+      resolve_single_reference(content_id_str, repo)
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  # Handle single reference (string)
   defp resolve_field_value(%{field_type: "reference"}, content_id_str, repo)
        when is_binary(content_id_str) do
+    resolve_single_reference(content_id_str, repo)
+  end
+
+  defp resolve_field_value(%{field_type: "reference"}, _value, _repo), do: nil
+
+  # Extract common resolution logic
+  defp resolve_single_reference(content_id_str, repo) do
     case Integer.parse(content_id_str) do
       {content_id, ""} ->
         case repo.get(Plato.Content, content_id) do
@@ -59,8 +75,6 @@ defmodule Plato.ContentResolver do
         nil
     end
   end
-
-  defp resolve_field_value(%{field_type: "reference"}, _value, _repo), do: nil
 
   @doc """
   Converts friendly field names to field IDs for storage.

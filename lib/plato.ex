@@ -440,8 +440,12 @@ defmodule Plato do
           end
 
         :reference ->
-          # No special options for reference fields currently
-          %{}
+          # Extract multiple option for reference fields
+          if Keyword.has_key?(opts, :multiple) do
+            %{"multiple" => Keyword.get(opts, :multiple)}
+          else
+            %{}
+          end
 
         _ ->
           %{}

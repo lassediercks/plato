@@ -57,18 +57,33 @@
             <% end %>
 
             <%= if field.field_type == "reference" do %>
-              <% content_id = Map.get(@content.field_values, to_string(field.id)) %>
-              <%= if content_id do %>
-                <% referenced_content = Enum.find(@all_contents, &(&1.id == String.to_integer(content_id))) %>
-                <%= if referenced_content do %>
-                  <a href={"#{@base_path}/content/#{referenced_content.id}"}>
-                    <%= referenced_content.schema.name %> #<%= referenced_content.id %>
-                  </a>
-                <% else %>
-                  Unknown content
-                <% end %>
-              <% else %>
-                —
+              <% value = Map.get(@content.field_values, to_string(field.id)) %>
+              <%= cond do %>
+                <% is_list(value) && !Enum.empty?(value) -> %>
+                  <ul style="margin: 0; padding-left: 20px;">
+                    <%= for content_id <- value do %>
+                      <% ref_content = Enum.find(@all_contents, &(&1.id == String.to_integer(content_id))) %>
+                      <%= if ref_content do %>
+                        <li>
+                          <a href={"#{@base_path}/content/#{ref_content.id}"}>
+                            <%= ref_content.schema.name %> #<%= ref_content.id %>
+                            <%= if Map.get(ref_content.field_values, "name"), do: " - #{Map.get(ref_content.field_values, "name")}" %>
+                          </a>
+                        </li>
+                      <% end %>
+                    <% end %>
+                  </ul>
+                <% is_binary(value) -> %>
+                  <% referenced_content = Enum.find(@all_contents, &(&1.id == String.to_integer(value))) %>
+                  <%= if referenced_content do %>
+                    <a href={"#{@base_path}/content/#{referenced_content.id}"}>
+                      <%= referenced_content.schema.name %> #<%= referenced_content.id %>
+                    </a>
+                  <% else %>
+                    Unknown content
+                  <% end %>
+                <% true -> %>
+                  <span class="empty-value">—</span>
               <% end %>
             <% end %>
           </span>

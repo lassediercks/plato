@@ -52,21 +52,40 @@
         <% end %>
 
         <%= if field.field_type == "reference" do %>
-          <select
-            id={"field_#{field.id}"}
-            name={"content[#{field.id}]"}
-            required
-          >
-            <option value="">Select <%= field.name %>...</option>
-            <%= for content <- @all_contents do %>
-              <%= if content.schema_id == field.referenced_schema_id do %>
-                <option value={content.id}>
-                  <%= content.schema.name %> #<%= content.id %>
-                  <%= if Map.get(content.field_values, "name"), do: " - #{Map.get(content.field_values, "name")}" %>
-                </option>
+          <%= if Map.get(field.options, "multiple") do %>
+            <select
+              id={"field_#{field.id}"}
+              name={"content[#{field.id}][]"}
+              multiple
+              style="height: 200px;"
+            >
+              <%= for content <- @all_contents do %>
+                <%= if content.schema_id == field.referenced_schema_id do %>
+                  <option value={content.id}>
+                    <%= content.schema.name %> #<%= content.id %>
+                    <%= if Map.get(content.field_values, "name"), do: " - #{Map.get(content.field_values, "name")}" %>
+                  </option>
+                <% end %>
               <% end %>
-            <% end %>
-          </select>
+            </select>
+            <small class="form-hint" style="display: block; margin-top: 4px; color: #666; font-size: 0.875rem;">Hold Ctrl/Cmd to select multiple</small>
+          <% else %>
+            <select
+              id={"field_#{field.id}"}
+              name={"content[#{field.id}]"}
+              required
+            >
+              <option value="">Select <%= field.name %>...</option>
+              <%= for content <- @all_contents do %>
+                <%= if content.schema_id == field.referenced_schema_id do %>
+                  <option value={content.id}>
+                    <%= content.schema.name %> #<%= content.id %>
+                    <%= if Map.get(content.field_values, "name"), do: " - #{Map.get(content.field_values, "name")}" %>
+                  </option>
+                <% end %>
+              <% end %>
+            </select>
+          <% end %>
         <% end %>
       </div>
     <% end %>
